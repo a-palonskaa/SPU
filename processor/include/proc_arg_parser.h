@@ -12,10 +12,11 @@ typedef struct {
     int output_valid;
 } flags_t;
 
-void InitiallizeFlagsHeaderSort(void* flag);
+void InitiallizeFlags(void* flag);
 
 cmd_error_t ChangeFlagInputFile(void* flags, const char* arg);
 cmd_error_t ChangeFlagOutputFile(void* flags, const char* arg);
+cmd_error_t ChangeFlagLoggerOutput(void* flag, const char* arg);
 
 cmd_error_t Help(void* flags, const char* arg);
 
@@ -25,7 +26,9 @@ const option_t COMMANDS[] = {
     // short_name  long_name         changeflag function         description                     has_arg
         {"-i",  "--input_file",    &ChangeFlagInputFile,      "Read data from the file"          , true},
         {"-o",  "--output_file",   &ChangeFlagOutputFile,     "Print results in the file "       , true},
-        {"-h",  "--help",          &Help,                     "Help"                             , false}
+        {"-h",  "--help",          &Help,                     "Help"                             , false},
+        {"-l",  "--logger_output", &ChangeFlagLoggerOutput,   "Print logger messages in the file", true},
+
 };
 
 const size_t COMMANDS_ARRAY_LENGTH = sizeof(COMMANDS) / sizeof(COMMANDS[0]);

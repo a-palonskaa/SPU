@@ -2,20 +2,30 @@
 #define PROCESSER_H
 
 #include <stdio.h>
+#include "my_stack.h"
+#include "stack.h"
 
 typedef enum {
-    CMD_PUSH = 1,
-    CMD_ADD  = 2,
-    CMD_SUB  = 3,
-    CMD_MUL  = 4,
-    CMD_DIV  = 5,
-    CMD_OUT  = 6,
-    CMD_IN   = 7,
-    CMD_SQRT = 8,
-    CMD_SIN  = 9,
-    CMD_COS  = 10,
-    CMD_DUMP = 11,
-    CMD_HLT  = 12,
+    CMD_PUSH  = 1,
+    CMD_ADD   = 2,
+    CMD_SUB   = 3,
+    CMD_MUL   = 4,
+    CMD_DIV   = 5,
+    CMD_OUT   = 6,
+    CMD_IN    = 7,
+    CMD_SQRT  = 8,
+    CMD_SIN   = 9,
+    CMD_COS   = 10,
+    CMD_DUMP  = 11,
+    CMD_HLT   = 12,
+    CMD_JA    = 13,
+    CMD_JAE   = 14,
+    CMD_JB    = 15,
+    CMD_JBE   = 16,
+    CMD_JNE   = 17,
+    CMD_JMP   = 18,
+    CMD_PUSHR = 19,
+    CMD_POP   = 20,
 } commands_name_t;
 
 typedef struct {
@@ -23,29 +33,40 @@ typedef struct {
     size_t args_amount;
 } commands_t;
 
-const commands_t commands[] = {{CMD_PUSH, 1},
-                               {CMD_ADD,  0},
-                               {CMD_SUB,  0},
-                               {CMD_MUL,  0},
-                               {CMD_DIV,  0},
-                               {CMD_OUT,  0},
-                               {CMD_IN,   1},
-                               {CMD_SQRT, 0},
-                               {CMD_SIN,  0},
-                               {CMD_COS,  0},
-                               {CMD_DUMP, 0},
-                               {CMD_HLT,  0}};
+const commands_t commands[] = {{CMD_PUSH,  1},
+                               {CMD_ADD,   0},
+                               {CMD_SUB,   0},
+                               {CMD_MUL,   0},
+                               {CMD_DIV,   0},
+                               {CMD_OUT,   0},
+                               {CMD_IN,    1},
+                               {CMD_SQRT,  0},
+                               {CMD_SIN,   0},
+                               {CMD_COS,   0},
+                               {CMD_DUMP,  0},
+                               {CMD_HLT,   0},
+                               {CMD_JA,    1},
+                               {CMD_JAE,   1},
+                               {CMD_JB,    1},
+                               {CMD_JBE,   1},
+                               {CMD_JNE,   1},
+                               {CMD_JMP,   1},
+                               {CMD_PUSHR, 1},
+                               {CMD_POP,   1}};
 
 typedef struct {
     unsigned char* code;
     size_t size;
+    double registres[8];
+    my_stack_t* stk;
 } processor_t;
 
 void run(processor_t* processor);
-size_t get_code(FILE* istream, processor_t* processor);
+size_t get_code(FILE* istream, processor_t* processor, size_t code_size);
 ssize_t find_file_size(FILE* istream);
 void parse_code(processor_t* processor, unsigned char* text, size_t file_size);
 size_t get_double (unsigned char* buffer, double* number);
 ssize_t get_int(unsigned char* buffer, unsigned char* number);
+void processor_dtor(processor_t* processor);
 
 #endif /* PROCESSER_H */

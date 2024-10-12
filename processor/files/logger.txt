@@ -1,0 +1,14 @@
+src/proc_verify.cpp:28 (verify_file)
+[INFO] 12.10.2024 20:06:19 
+	FILE WAS VERIFIED
+	@aliffka:[version]:2.0
+	
+src/processor.cpp:220 (parse_code)
+[INFO] 12.10.2024 20:06:19 
+	Parsing has been started
+src/processor.cpp:251 (parse_code)
+[INFO] 12.10.2024 20:06:19 
+	Successfully parsed the text
+src/processor.cpp:202 (get_code)
+[INFO] 12.10.2024 20:06:19 
+	Processor structure is successfully created and initialized
