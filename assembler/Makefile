@@ -20,7 +20,7 @@ LIBS_DIR = ../build/libs
 
 INCLUDES_STACK = ../stack/include
 INCLUDES_COMMON = ../common/logger ../common/parse_arguments
-SOURCES = main.cpp asm.cpp
+SOURCES = main.cpp asm.cpp asm_arg_parser.cpp
 OBJECTS = $(addprefix $(BUILD_DIR)/src/, $(SOURCES:%.cpp=%.o))
 DEPS = $(OBJECTS:%.o=%.d)
 
@@ -39,5 +39,6 @@ $(OBJECTS): $(BUILD_DIR)/%.o:%.cpp
 	@$(CC) $(CFLAGS) -MP -MMD -c $< -o $@
 
 .PHONY: clean
+
 clean:
 	@rm -f $(OBJECTS) $(EXECUTABLE) $(DEPS)
