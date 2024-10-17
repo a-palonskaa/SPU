@@ -17,11 +17,14 @@ static void print_double (void* elm, FILE* ostream) {
 }
 
 void run(processor_t* processor) {
+    assert(processor != nullptr);
+    assert(processor->code != nullptr);
+
     processor->stk = NEW_STACK_(sizeof(double), 10, print_double);
     size_t ip = 0;
     bool run_flag = 1;
-
     while (run_flag) {
+        //printf("ip = %zu, next bytes is %02x\n",ip, processor->code[ip]);
         switch (*((unsigned char*) processor->code + ip)) {
             case CMD_PUSH: {
                 stack_push(processor->stk, &processor->code[ip + 1]);
@@ -107,47 +110,47 @@ void run(processor_t* processor) {
             }
             case CMD_JA: {
                 double elm1 = 0, elm2 = 0;
-                double address = 0;
-                memcpy(&address, &processor->code[ip + 1], sizeof(double));
+                size_t address = 0;
+                memcpy(&address, &processor->code[ip + 1], sizeof(size_t));
                 stack_pop(processor->stk, &elm1);
                 stack_pop(processor->stk, &elm2);
-                ip = (elm2 > elm1) ? (size_t) address : (ip + 1 + sizeof(double));
+                ip = (elm2 > elm1) ? address : (ip + 1 + sizeof(size_t));
                 break;
             }
             case CMD_JAE: {
                 double elm1 = 0, elm2 = 0;
-                double address = 0;
-                memcpy(&address, &processor->code[ip + 1], sizeof(double));
+                size_t address = 0;
+                memcpy(&address, &processor->code[ip + 1], sizeof(size_t));
                 stack_pop(processor->stk, &elm1);
                 stack_pop(processor->stk, &elm2);
-                ip = (elm2 >= elm1) ? (size_t) address : (ip + 1 + sizeof(double));
+                ip = (elm2 >= elm1) ? address : (ip + 1 + sizeof(size_t));
                 break;
             }
             case CMD_JB: {
                 double elm1 = 0, elm2 = 0;
-                double address = 0;
-                memcpy(&address, &processor->code[ip + 1], sizeof(double));
+                size_t address = 0;
+                memcpy(&address, &processor->code[ip + 1], sizeof(size_t));
                 stack_pop(processor->stk, &elm1);
                 stack_pop(processor->stk, &elm2);
-                ip = (elm2 < elm1) ? (size_t) address : (ip + 1 + sizeof(double));
+                ip = (elm2 < elm1) ? address : (ip + 1 + sizeof(size_t));
                 break;
             }
             case CMD_JBE: {
                 double elm1 = 0, elm2 = 0;
-                double address = 0;
-                memcpy(&address, &processor->code[ip + 1], sizeof(double));
+                size_t address = 0;
+                memcpy(&address, &processor->code[ip + 1], sizeof(size_t));
                 stack_pop(processor->stk, &elm1);
                 stack_pop(processor->stk, &elm2);
-                ip = (elm2 <= elm1) ? (size_t) address : (ip + 1 + sizeof(double));
+                ip = (elm2 <= elm1) ? address : (ip + 1 + sizeof(size_t));
                 break;
             }
             case CMD_JNE: {
                 double elm1 = 0, elm2 = 0;
-                double address = 0;
-                memcpy(&address, &processor->code[ip + 1], sizeof(double));
+                size_t address = 0;
+                memcpy(&address, &processor->code[ip + 1], sizeof(size_t));
                 stack_pop(processor->stk, &elm1);
                 stack_pop(processor->stk, &elm2);
-                ip = (elm2 == elm1) ? (size_t) address : (ip + 1 + sizeof(double));
+                ip = (elm2 == elm1) ? address : (ip + 1 + sizeof(size_t));
                 break;
             }
             case CMD_JMP: {
@@ -155,24 +158,25 @@ void run(processor_t* processor) {
                 break;
             }
             case CMD_PUSHR: {
-                double address = 0;
-                memcpy(&address, &processor->code[ip + 1], sizeof(double));
-                stack_push(processor->stk, &processor->registres[(size_t)address - 1]);
-                ip += 1 + sizeof(double);
+                unsigned char reg = 0;
+                memcpy(&reg, &processor->code[ip + 1], sizeof(char));
+                stack_push(processor->stk, &processor->registres[(size_t) reg - 1]);
+                ip += 1 + sizeof(char);
                 break;
             }
             case CMD_POP: {
                 double elm = 0;
-                double address = 0;
-                memcpy(&address, &processor->code[ip + 1], sizeof(double));
+                unsigned char reg = 0;
+                memcpy(&reg, &processor->code[ip + 1], sizeof(char));
                 stack_pop(processor->stk, &elm);
-                processor->registres[(size_t)address - 1] = elm;
-                ip += 1 + sizeof(double);
+                processor->registres[(size_t) reg - 1] = elm;
+                ip += 1 + sizeof(char);
                 break;
             }
             default: {
                 fprintf(stdout, "SNIXERR: %d\n", *((unsigned char*) processor->code + ip));
                 LOG(ERROR, "Undefined command ""%d""\n", *((unsigned char*) processor->code + ip));
+                return;
                 break;
             }
         }
@@ -184,22 +188,23 @@ size_t get_code(FILE* istream, processor_t* processor, size_t code_size) {
     assert(istream);
     assert(processor);
 
-    size_t file_size = (size_t) find_file_size(istream);
-    unsigned char* text = (unsigned char*) calloc(file_size, sizeof(char));
-    assert(text); // ХУЙНЯ
+    processor->code = (unsigned char*) calloc(code_size, sizeof(char));
 
-    if ((fread(text, sizeof(char), file_size, istream) != file_size) &&
+    if ((fread(processor->code, sizeof(char), code_size, istream) != code_size) &&
         !feof(istream) && ferror(istream)) {
         return 0;
     }
 
     processor->size = code_size;
-    parse_code(processor, text, file_size);
 
-    free(text);
-    text = nullptr;
+#ifdef DEBUG
+    printf("Code size is %zu\n", code_size);
+    for (size_t i = 0; i < code_size; i++) {
+        printf("%zu = %02x \n", i, processor->code[i]);
+    }
+#endif /* DEBUG */
 
-    LOG(INFO, "Processor structure is successfully created and initialized\n");
+    LOG(INFO, "Processor structure is successfully created and initialized.\n");
     return processor->size;
 }
 
@@ -217,11 +222,11 @@ ssize_t find_file_size(FILE* istream) {
 
 void parse_code(processor_t* processor, unsigned char* text, size_t file_size) {
     assert(processor != nullptr);
-    LOG(INFO, "Parsing has been started\n");
+    LOG(INFO, "Parsing has been started.\n");
 
     processor->code = (unsigned char*) calloc(processor->size, sizeof(double));
     if (processor->code == nullptr) {
-        LOG(ERROR, "MEMORY ALLOCATION ERROR" STRERROR(errno));
+        LOG(ERROR, "Memory allocation error.\n" STRERROR(errno));
         return;
     }
 
@@ -248,7 +253,7 @@ void parse_code(processor_t* processor, unsigned char* text, size_t file_size) {
             j += sizeof(double);
         }
     }
-    LOG(INFO, "Successfully parsed the text\n");
+    LOG(INFO, "Successfully parsed the text.\n");
 }
 
 size_t get_double (unsigned char* buffer, double* number) {
