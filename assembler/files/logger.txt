@@ -1,3 +1,9 @@
-src/asm.cpp:263 (assemble)
-[INFO] 17.10.2024 11:12:47 
+src/asm.cpp:282 (parse_if_label)
+[INFO] 17.10.2024 17:14:42 
+	[DEBUG INFO]: label with name jump (len = 4) and addr 11 is adding
+src/asm.cpp:310 (parse_if_has_label)
+[INFO] 17.10.2024 17:14:42 
+	[DEBUG INFO]: label with name jump (len = 4)
+src/asm.cpp:109 (assemble)
+[INFO] 17.10.2024 17:14:42 
 	SUCCESSFULLY FINISHED ASSEMBLING

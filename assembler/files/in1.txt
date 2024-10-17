@@ -1,5 +1,6 @@
 push 0
 pop ax
+jump:
 push ax
 push ax
 mul
@@ -10,6 +11,5 @@ add
 pop ax
 push ax
 push 10
-jb 18
+jb jump:
 hlt
-

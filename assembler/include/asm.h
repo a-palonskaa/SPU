@@ -2,6 +2,7 @@
 #define ASM_H
 
 #include <stdio.h>
+#include "label.h"
 
 typedef enum {
     CMD_PUSH  = 1,
@@ -55,8 +56,15 @@ const commands_t commands[] = {{CMD_PUSH,  "push", 1},
 
 const size_t commands_size = sizeof(commands) / sizeof(commands[0]);
 
+typedef enum {
+    NOT_FOUND = 0,
+    CONTINUE  = 1,
+} status_t;
+
 void assemble(FILE* istream, FILE* ostream);
-ssize_t find_file_size(FILE* istream);
 void print_header(FILE* ostream, size_t bytes_cnt);
+
+ssize_t find_file_size(FILE* istream);
+size_t assemble_text_format (char* cmd, char* code, size_t bytes_cnt, size_t* size_bytes);
 
 #endif /* ASM_H */
