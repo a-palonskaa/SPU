@@ -186,7 +186,7 @@ size_t get_code(FILE* istream, processor_t* processor, size_t code_size) {
 
     size_t file_size = (size_t) find_file_size(istream);
     unsigned char* text = (unsigned char*) calloc(file_size, sizeof(char));
-    assert(text);
+    assert(text); // ХУЙНЯ
 
     if ((fread(text, sizeof(char), file_size, istream) != file_size) &&
         !feof(istream) && ferror(istream)) {

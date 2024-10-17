@@ -20,7 +20,7 @@ LIBS_DIR = ../build/libs
 
 INCLUDES_STACK = ../stack/include
 INCLUDES_COMMON = ../common/logger ../common/parse_arguments
-SOURCES = main.cpp asm.cpp asm_arg_parser.cpp
+SOURCES = main.cpp asm.cpp asm_arg_parser.cpp fixup.cpp label.cpp
 OBJECTS = $(addprefix $(BUILD_DIR)/src/, $(SOURCES:%.cpp=%.o))
 DEPS = $(OBJECTS:%.o=%.d)
 

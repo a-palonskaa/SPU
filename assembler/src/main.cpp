@@ -31,7 +31,7 @@ int main(int argc, const char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    FILE* ostream = fopen(flags.output_file_name, "w");
+    FILE* ostream = fopen(flags.output_file_name, "wb");
     if (ostream == nullptr) {
         LOG(ERROR, "FAILED TO OPEN OUTPUT FILE\n" STRERROR(errno));
         ostream = stdout;

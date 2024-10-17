@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#define STRERROR(ERRNO) ": %s", strerror(errno)
+
 enum LogLevel {
     DEBUG   = 0,
     INFO    = 1,
