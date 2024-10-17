@@ -261,7 +261,7 @@ static status_t parse_number(unsigned char* cmd, unsigned char* code, size_t* by
     size_t addr = 0;
     if (get_uint(cmd, &addr) == -1) {
         LOG(ERROR, "SYNTAX ERROR command %s not found\n", cmd);
-        return NOT_FOUND;
+        return SYNTAX_ERROR;
     }
 
     memcpy(&code[*bytes_cnt], &addr, sizeof(size_t));
@@ -282,12 +282,12 @@ static status_t parse_if_label(unsigned char* cmd, name_table_t* name_table, siz
                 name, (size_t) (((unsigned char *) strstr((char *) cmd, ":")) - cmd), bytes_cnt);   //REVIEW -
         if (!add_label(name_table, name, bytes_cnt)) {
             LOG(ERROR, "SYNTAX ERROR LABEL %s is already exists\n", name);
-            return NOT_FOUND;
+            return SYNTAX_ERROR;
         }
     }
     else {
         LOG(ERROR, "SYNTAX ERROR command %s not found\n", cmd);
-        return NOT_FOUND;
+        return SYNTAX_ERROR;
     }
 
     return CONTINUE;
@@ -324,7 +324,7 @@ static status_t parse_if_has_label(unsigned char* cmd, unsigned char* code, name
             return CONTINUE;
     }
 
-    return NOT_FOUND;
+    return SYNTAX_ERROR;
 }
 
 static void parse_push(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt) {

@@ -56,10 +56,14 @@ const commands_t commands[] = {{CMD_PUSH,  "push", 1},
 
 const size_t commands_size = sizeof(commands) / sizeof(commands[0]);
 
+//==================================================================================================
+
 typedef enum {
-    NOT_FOUND = 0,
+    SYNTAX_ERROR = 0,
     CONTINUE  = 1,
 } status_t;
+
+//==================================================================================================
 
 void assemble(FILE* istream, FILE* ostream);
 void print_header(FILE* ostream, size_t bytes_cnt);
