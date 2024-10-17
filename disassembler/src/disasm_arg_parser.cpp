@@ -3,8 +3,8 @@
 
 //----------------------------------------------------------------------------------------------
 const char* LOGGER_OUTPUT = "files/logger.txt";
-const char* OUTPUT = "files/out.txt"; //when form root make processor/, form local without
-const char* INPUT = "files/in.asm";
+const char* OUTPUT = "files/out1.txt"; //when form root make processor/, form local without
+const char* INPUT = "files/in1.asm";
 
 static void InitiallizeValidationFlags(void* flag);
 static void PrintHelp();;
