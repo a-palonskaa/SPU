@@ -17,7 +17,7 @@ typedef enum {
 } verify_t;
 
 verify_t verify_file(FILE* istream, size_t* bytes_cnt);
-const char* str_error_status(verify_t error_status);
 void processor_dump(FILE* ostream, processor_t* processor, size_t id);
+const char* str_error_status(verify_t error_status);
 
 #endif /* VERIFY_H */

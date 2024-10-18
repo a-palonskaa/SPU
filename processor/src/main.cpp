@@ -43,11 +43,12 @@ int main(int argc, const char* argv[]) {
     }
 
     processor_t processor = {};
+    processor_ctor(&processor, code_size);
     get_code(istream, &processor, code_size);
+
     run(&processor);
 
     processor_dtor(&processor);
-
 
     if (fclose(istream) == EOF) {
         LOG(ERROR, "FAILED TO CLOSE INPUT FILE\n" STRERROR(errno));

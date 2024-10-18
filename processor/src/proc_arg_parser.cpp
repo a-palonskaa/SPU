@@ -1,7 +1,7 @@
 #include "proc_arg_parser.h"
 #include <assert.h>
 
-//----------------------------------------------------------------------------------------------
+//====================================================================================================
 const char* LOGGER_OUTPUT = "files/logger.txt";
 const char* OUTPUT = "files/out2.asm"; //when form root make processor/, form local without
 const char* INPUT = "files/in3.asm";
@@ -9,7 +9,7 @@ const char* INPUT = "files/in3.asm";
 static void InitiallizeValidationFlags(void* flag);
 static void PrintHelp();;
 
-//----------------------------------------------------------------------------------------------
+//====================================================================================================
 
 cmd_error_t ChangeFlagInputFile(void* flag, const char* arg) {
     assert(flag != nullptr);
@@ -42,7 +42,8 @@ cmd_error_t ChangeFlagLoggerOutput(void* flag, const char* arg) {
 
     return NO_CMD_ERRORS;
 }
-//----------------------------------------------------------------------------------------------
+
+//====================================================================================================
 
 cmd_error_t Help(void* flag, const char* arg) {
     (void) arg;
@@ -72,7 +73,7 @@ cmd_error_t ValidateInput(const void* flag) {
     return NO_CMD_ERRORS;
 }
 
-//----------------------------------------------------------------------------------------------
+//====================================================================================================
 
 void InitiallizeFlags(void* flag) {
     assert(flag != nullptr);

@@ -5,6 +5,8 @@
 #include "my_stack.h"
 #include "stack.h"
 
+//====================================================================================================
+
 typedef enum {
     CMD_PUSH  = 1,
     CMD_ADD   = 2,
@@ -26,6 +28,8 @@ typedef enum {
     CMD_JMP   = 18,
     CMD_PUSHR = 19,
     CMD_POP   = 20,
+    CMD_CALL  = 21,
+    CMD_RET   = 22,
 } commands_name_t;
 
 typedef struct {
@@ -52,21 +56,32 @@ const commands_t commands[] = {{CMD_PUSH,  1},
                                {CMD_JNE,   1},
                                {CMD_JMP,   1},
                                {CMD_PUSHR, 1},
-                               {CMD_POP,   1}};
+                               {CMD_POP,   1},
+                               {CMD_CALL,  1},
+                               {CMD_RET,   0}};
+
+//====================================================================================================
 
 typedef struct {
     unsigned char* code;
-    size_t size;
     double registres[8];
+    size_t size;
+
     my_stack_t* stk;
+    my_stack_t* addr_stk;
 } processor_t;
 
-void run(processor_t* processor);
+void processor_ctor(processor_t* processor, size_t code_size);
+void processor_dtor(processor_t* processor);
+
 size_t get_code(FILE* istream, processor_t* processor, size_t code_size);
-ssize_t find_file_size(FILE* istream);
+void run(processor_t* processor);
+
+//====================================================================================================
+
 void parse_code(processor_t* processor, unsigned char* text, size_t file_size);
+ssize_t find_file_size(FILE* istream);
 size_t get_double (unsigned char* buffer, double* number);
 ssize_t get_int(unsigned char* buffer, unsigned char* number);
-void processor_dtor(processor_t* processor);
 
 #endif /* PROCESSER_H */

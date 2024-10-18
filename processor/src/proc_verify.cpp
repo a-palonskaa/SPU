@@ -1,43 +1,50 @@
+#include "ctype.h"
 #include "proc_verify.h"
 #include "processor.h"
 #include "logger.h"
 #include "verify.h"
 
+//====================================================================================================
+
+const char* MY_SIGNATURE = "aliffka";
+const char* CURRENT_VERSION = "3.0";
+
+//====================================================================================================
+
+static ssize_t get_uint(unsigned char* buffer, size_t* number);
+
+//====================================================================================================
+
 verify_t verify_file(FILE* istream, size_t* bytes_cnt) {
     char signature[50] = "";
     char version[50] = "";
     char size_info[50] = "";
-    double size = 0;
+    size_t size = 0;
 
     fgets(signature, 50, istream);
     fgets(version, 50, istream);
     fgets(size_info, 50, istream);
 
-    if (strstr(signature, "aliffka") == nullptr) {
+    if (strstr(signature, MY_SIGNATURE) == nullptr) {
         LOG(ERROR, "INAVALID FILE SIGNATURE\n");
         return UNKNOWN_CREATOR;
     }
-    if (strstr(version, "2.0") == nullptr) {
+    if (strstr(version, CURRENT_VERSION) == nullptr) {
         LOG(ERROR, "INAPPROPRIATE VERSION OF CODE\n");
         return INAPPROPRIATE_VERSION;
     }
 
-    get_double((unsigned char*) strstr(size_info, "[bytes amount]:") + sizeof("[bytes amount]:"), &size);
-    *bytes_cnt = (size_t) size;
+    get_uint((unsigned char*) strstr(size_info, "[bytes amount]:") + sizeof("[bytes amount]:"), &size);
+    *bytes_cnt = size;
 
-    LOG(INFO, "FILE WAS VERIFIED\n@aliffka:[version]:2.0\n\n");
+    LOG(INFO, "FILE WAS VERIFIED\n@%s:[version]:%s\n\n", MY_SIGNATURE, CURRENT_VERSION);
     return VALID_HEADER;
 }
 
-//============================================================================
+//====================================================================================================
 
 verify_t verify_processor(processor_t* processor) {
     assert(processor != nullptr);
-
-    if (processor->registres == nullptr) {
-        LOG(ERROR, "NULL REGISTRES POINTER\n");
-        return NULL_REGISTRES_PTR;
-    }
 
     if (processor->code == nullptr) {
         LOG(ERROR, "NULL CODE POINTER\n");
@@ -62,7 +69,7 @@ verify_t verify_processor(processor_t* processor) {
     return VALID_PROCESSOR;
 }
 
-//============================================================================
+//====================================================================================================
 
 void processor_dump(FILE* ostream, processor_t* processor, size_t id) {
     assert(processor != nullptr);
@@ -100,4 +107,28 @@ const char* str_error_status(verify_t error_status) {
         default:
             break;
     }
+}
+
+//====================================================================================================
+
+static ssize_t get_uint(unsigned char* buffer, size_t* number) {
+    assert(buffer != nullptr);
+    assert(number != nullptr);
+
+    size_t i = 0;
+    size_t val = 0;
+
+    for (; !isdigit(buffer[i]); i++) {
+        ;
+    }
+
+    for (; isdigit(buffer[i]); i++) {
+        val = 10 * val + (size_t) (buffer[i] - '0');
+    }
+
+    if (val) {
+        *number = val;
+        return (ssize_t) i;
+    }
+    return -1;
 }

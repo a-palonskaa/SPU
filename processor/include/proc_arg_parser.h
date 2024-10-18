@@ -22,6 +22,8 @@ cmd_error_t Help(void* flags, const char* arg);
 
 cmd_error_t ValidateInput(const void* flag);
 
+//====================================================================================================
+
 const option_t COMMANDS[] = {
     // short_name  long_name         changeflag function         description                     has_arg
         {"-i",  "--input_file",    &ChangeFlagInputFile,      "Read data from the file"          , true},
