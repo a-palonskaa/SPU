@@ -25,7 +25,7 @@ static status_t parse_if_has_label(unsigned char* cmd, unsigned char* code, name
 static size_t get_double(unsigned char* buffer, double* number);
 static ssize_t get_uint(unsigned char* buffer, size_t* number);
 
-static void assembler_dtor(name_table_t* name_table, fixup_t* fixup, unsigned char* code) ;
+static void assembler_dtor(name_table_t* name_table, fixup_t* fixup, unsigned char* code, unsigned char* cmd);
 
 //==================================================================================================
 
@@ -35,6 +35,8 @@ static size_t print_register(char* cmd, char* code);
 //==================================================================================================
 
 const size_t LABELS_AMOUNT = 10;
+const char* SIGNATURE = "aliffka";
+const char* VERSION = "3.0";
 
 //==================================================================================================
 
@@ -54,8 +56,15 @@ void assemble(FILE* istream, FILE* ostream) {
     name_table_t* name_table = new_name_table(LABELS_AMOUNT);
     fixup_t* fixup = new_fixup(LABELS_AMOUNT);
 
-    unsigned char cmd[50] = "";
-    while (fgets((char*) cmd, 50, istream)) {
+    unsigned char* cmd = nullptr;
+    size_t line_len = 0;
+
+    while (getline((char**) &cmd, &line_len, istream) != -1) {
+        void* comment_ptr = (void*) strstr((const char*) cmd, ";");
+        if (comment_ptr != nullptr) {
+            *((unsigned char*) comment_ptr) = '\0';
+        }
+
         size_t i = 0;
         for (; i < commands_size; i++) {
             if (strstr((const char*) cmd, commands[i].alias) != nullptr) {
@@ -68,6 +77,8 @@ void assemble(FILE* istream, FILE* ostream) {
                 if (parse_if_label(cmd, name_table, bytes_cnt) == CONTINUE) {
                     continue;
                 }
+                free(cmd);
+                free(code);
                 return;
             }
             case 0: {
@@ -96,8 +107,11 @@ void assemble(FILE* istream, FILE* ostream) {
         }
 
         if (parse_number(cmd, code, &bytes_cnt) != CONTINUE) {
+            free(cmd);
+            free(code);
             return;
         }
+
     }
 
     second_pass_compilation(fixup, name_table, code);
@@ -105,7 +119,7 @@ void assemble(FILE* istream, FILE* ostream) {
     print_header(ostream, bytes_cnt);
     fwrite(code, sizeof(char), bytes_cnt, ostream);
 
-    assembler_dtor(name_table, fixup, code);
+    assembler_dtor(name_table, fixup, code, cmd);
 
     LOG(INFO, "SUCCESSFULLY FINISHED ASSEMBLING\n");
 }
@@ -142,11 +156,15 @@ ssize_t find_file_size(FILE* istream) {
     return (ssize_t) file_data.st_size;
 }
 
-static void assembler_dtor(name_table_t* name_table, fixup_t* fixup, unsigned char* code) {
+static void assembler_dtor(name_table_t* name_table, fixup_t* fixup, unsigned char* code, unsigned char* cmd) {
     name_table_dtor(name_table);
     fixup_dtor(fixup);
+
     free(code);
     code = nullptr;
+
+    free(cmd);
+    cmd = nullptr;
 }
 
 //==================================================================================================
@@ -154,7 +172,7 @@ static void assembler_dtor(name_table_t* name_table, fixup_t* fixup, unsigned ch
 void print_header(FILE* ostream, size_t bytes_cnt) {
     assert(ostream);
 
-    fprintf(ostream, "aliffka\n""[version]: 2.0\n""[bytes amount]: %zu\n", bytes_cnt);
+    fprintf(ostream, "%s\n""[version]: %s\n""[bytes amount]: %zu\n", SIGNATURE, VERSION, bytes_cnt);
 
 }
 
@@ -319,6 +337,8 @@ static status_t parse_if_has_label(unsigned char* cmd, unsigned char* code, name
             else {
                 size_t valid_addr = (size_t) addr;
                 memcpy(&code[*bytes_cnt], &valid_addr, sizeof(size_t));
+                // printf("valid %zx\n", valid_addr);
+                // printf("writen %x %x %x %x %x %x %x %x\n", code[*bytes_cnt], code[*bytes_cnt + 1], code[*bytes_cnt + 2], code[*bytes_cnt + 3], code[*bytes_cnt + 4], code[*bytes_cnt + 5], code[*bytes_cnt + 6], code[*bytes_cnt + 7]);
             }
             *bytes_cnt += sizeof(size_t);
             return CONTINUE;

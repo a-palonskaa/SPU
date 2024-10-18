@@ -1,0 +1,18 @@
+call count:
+hlt
+count:
+push 0
+pop ax
+jump:
+push ax
+push ax
+mul
+out
+push ax
+push 1
+add
+pop ax
+push ax
+push 10
+jb jump:
+ret
