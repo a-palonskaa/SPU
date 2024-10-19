@@ -11,6 +11,7 @@
 #include "pop_push.h"
 #include "verify.h"
 #include "logger.h"
+#include "drow.h"
 
 //====================================================================================================
 
@@ -19,9 +20,17 @@ const double REG_POISON_VALUE = -666.666;
 
 //====================================================================================================
 
+const unsigned char REG_TYPE = 1 << 1;
+const unsigned char NUM_TYPE = 1 << 2;
+const unsigned char RAM_TYPE = 1 << 3;
+
+//====================================================================================================
+
 static void print_double(void* elm, FILE* ostream);
 static void print_addr(void* elm, FILE* ostream);
 
+static double get_arg_push(processor_t* processor, size_t* ip);
+static double* get_arg_pop(processor_t* processor, size_t* ip);
 //====================================================================================================
 
 void processor_ctor(processor_t* processor, size_t code_size) {
@@ -44,6 +53,10 @@ void processor_ctor(processor_t* processor, size_t code_size) {
 
     for (size_t i = 0; i < 8; i++) {
         processor->registres[i] = REG_POISON_VALUE;
+    }
+
+    for (size_t i = 0; i < 100; i++) {
+        processor->ram[i] = 0;
     }
 }
 
@@ -85,17 +98,19 @@ size_t get_code(FILE* istream, processor_t* processor, size_t code_size) {
 
 //====================================================================================================
 
-void run(processor_t* processor) {
+void run(processor_t* processor, FILE* ostream) {
     assert(processor != nullptr);
     assert(processor->code != nullptr);
 
     size_t ip = 0;
     bool run_flag = 1;
     while (run_flag) {
+        //printf("ip = %zu\n", ip);
         switch (processor->code[ip]) {
             case CMD_PUSH: {
-                stack_push(processor->stk, &processor->code[ip + 1]);
-                ip += 1 + sizeof(double);
+                ip++;
+                double value = get_arg_push(processor, &ip);
+                stack_push(processor->stk, &value);
                 break;
             }
             case CMD_ADD: {
@@ -137,7 +152,7 @@ void run(processor_t* processor) {
             case CMD_OUT: {
                 double result = 0;
                 stack_pop(processor->stk, &result);
-                fprintf(stdout, "Result is %f\n", result);
+                fprintf(ostream, "Result is %f\n", result);
                 ip++;
                 break;
             }
@@ -171,6 +186,7 @@ void run(processor_t* processor) {
                 break;
             }
             case CMD_HLT: {
+                printf("HLT\n");
                 run_flag = 0;
                 ip++;
                 break;
@@ -181,6 +197,7 @@ void run(processor_t* processor) {
                 memcpy(&address, &processor->code[ip + 1], sizeof(size_t));
                 stack_pop(processor->stk, &elm1);
                 stack_pop(processor->stk, &elm2);
+                //printf("elm1 = %f, elm2 = %f\n", elm1, elm2);
                 ip = (elm2 > elm1) ? address : (ip + 1 + sizeof(size_t));
                 break;
             }
@@ -194,6 +211,7 @@ void run(processor_t* processor) {
                 break;
             }
             case CMD_JB: {
+                //printf("JB\n");
                 double elm1 = 0, elm2 = 0;
                 size_t address = 0;
                 memcpy(&address, &processor->code[ip + 1], sizeof(size_t));
@@ -226,20 +244,11 @@ void run(processor_t* processor) {
                 ip = address;
                 break;
             }
-            case CMD_PUSHR: {
-                unsigned char reg = 0;
-                memcpy(&reg, &processor->code[ip + 1], sizeof(char));
-                stack_push(processor->stk, &processor->registres[(size_t) reg - 1]);
-                ip += 1 + sizeof(char);
-                break;
-            }
             case CMD_POP: {
-                double elm = 0;
-                unsigned char reg = 0;
-                memcpy(&reg, &processor->code[ip + 1], sizeof(char));
-                stack_pop(processor->stk, &elm);
-                processor->registres[(size_t) reg - 1] = elm;
-                ip += 1 + sizeof(char);
+                ip++;
+                double value = 0;
+                stack_pop(processor->stk, &value);
+                *get_arg_pop(processor, &ip) = value;
                 break;
             }
             case CMD_CALL: {
@@ -256,9 +265,23 @@ void run(processor_t* processor) {
                 ip = addr;
                 break;
             }
+            case CMD_DROW: {
+                printf("DROW\n");
+                ip++;
+                drow(processor->ram);
+                break;
+            }
+            case CMD_SQR: {
+                ip++;
+                double elm1 = 0, elm2 = 0;
+                stack_pop(processor->stk, &elm1);
+                elm2 = elm1 * elm1;
+                stack_push(processor->stk, &elm2);
+                break;
+            }
             default: {
-                fprintf(stdout, "SNIXERR: %d %d\n", processor->code[ip], processor->code[ip] == CMD_HLT);
-                LOG(ERROR, "Undefined command ""%d""\n", processor->code[ip]);
+                fprintf(ostream, "SNIXERR: %d %d\n", processor->code[ip], processor->code[ip] == CMD_HLT);
+                LOG(ERROR, "Undefined command ""%d"" ip = %zu\n", processor->code[ip], ip);
                 return;
                 break;
             }
@@ -373,3 +396,68 @@ ssize_t find_file_size(FILE* istream) {
     }
     return (ssize_t) file_data.st_size;
 }
+
+static double get_arg_push(processor_t* processor, size_t* ip) {
+    assert(processor != nullptr);
+    assert(ip != nullptr);
+
+    unsigned char arg_type = processor->code[(*ip)++];
+    double result = 0;
+
+    if (arg_type & REG_TYPE) {
+        printf("REG TYPE ");
+        unsigned char reg = 0;
+        memcpy(&reg, &processor->code[*ip], sizeof(char));
+        *ip += sizeof(char);
+        result += processor->registres[(size_t) reg - 1];
+    }
+
+    if (arg_type & NUM_TYPE) {
+        double number = 0;
+        memcpy(&number, &processor->code[*ip], sizeof(double));
+        *ip += sizeof(double);
+        printf("REG NUM, num is %f\n", number);
+        result += number;
+    }
+
+    if (arg_type & RAM_TYPE) {
+        return processor->ram[(size_t) result];
+    }
+
+    return result;
+}
+
+static double* get_arg_pop(processor_t* processor, size_t* ip) {
+    assert(processor != nullptr);
+    assert(ip != nullptr);
+
+    unsigned char arg_type = processor->code[(*ip)++];
+    double address = 0;
+
+    if (arg_type & RAM_TYPE) {
+        if (arg_type & NUM_TYPE) {
+            double number = 0;
+            memcpy(&number, &processor->code[*ip], sizeof(double));
+            *ip += sizeof(double);
+            address += number;
+
+        }
+        if (arg_type & REG_TYPE){
+            //printf("pop to a op\n");
+            unsigned char reg = 0;
+            memcpy(&reg, &processor->code[*ip], sizeof(char));
+            *ip += sizeof(char);
+            address += processor->registres[(size_t) reg - 1];
+        }
+        printf("popped to %zu\n", (size_t) address);
+        return &processor->ram[(size_t) address];
+    }
+
+    unsigned char reg = 0;
+    memcpy(&reg, &processor->code[*ip], sizeof(char));
+    *ip += sizeof(char);
+    //printf("will pop to reg, %zu\n", (size_t) reg - 1);
+    return &processor->registres[(size_t) reg - 1];
+}
+
+//====================================================================================================

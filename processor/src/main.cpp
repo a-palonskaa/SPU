@@ -46,8 +46,8 @@ int main(int argc, const char* argv[]) {
     processor_ctor(&processor, code_size);
     get_code(istream, &processor, code_size);
 
-    run(&processor);
-
+    run(&processor, ostream);
+    printf("finish run\n");
     processor_dtor(&processor);
 
     if (fclose(istream) == EOF) {

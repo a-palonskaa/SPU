@@ -1,8 +1,8 @@
 src/proc_verify.cpp:40 (verify_file)
-[INFO] 18.10.2024 09:59:25 
+[INFO] 19.10.2024 12:41:24 
 	FILE WAS VERIFIED
-	@aliffka:[version]:3.0
+	@aliffka:[version]:4.3
 	
-src/processor.cpp:82 (get_code)
-[INFO] 18.10.2024 09:59:25 
+src/processor.cpp:95 (get_code)
+[INFO] 19.10.2024 12:41:24 
 	Processor structure is successfully created and initialized.

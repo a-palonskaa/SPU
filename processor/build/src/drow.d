@@ -1,8 +1,4 @@
-build/src/processor.o: src/processor.cpp include/processor.h \
-  ../stack/include/my_stack.h ../stack/include/stack.h \
-  ../stack/include/define.h include/proc_verify.h \
-  ../stack/include/pop_push.h ../stack/include/verify.h \
-  ../common/logger/logger.h include/drow.h \
+build/src/drow.o: src/drow.cpp include/drow.h \
   /opt/homebrew/include/SDL2/SDL.h /opt/homebrew/include/SDL2/SDL_main.h \
   /opt/homebrew/include/SDL2/SDL_stdinc.h \
   /opt/homebrew/include/SDL2/SDL_config.h \
@@ -51,23 +47,7 @@ build/src/processor.o: src/processor.cpp include/processor.h \
   /opt/homebrew/include/SDL2/SDL_timer.h \
   /opt/homebrew/include/SDL2/SDL_version.h \
   /opt/homebrew/include/SDL2/SDL_locale.h \
-  /opt/homebrew/include/SDL2/SDL_misc.h
-
-include/processor.h:
-
-../stack/include/my_stack.h:
-
-../stack/include/stack.h:
-
-../stack/include/define.h:
-
-include/proc_verify.h:
-
-../stack/include/pop_push.h:
-
-../stack/include/verify.h:
-
-../common/logger/logger.h:
+  /opt/homebrew/include/SDL2/SDL_misc.h ../common/logger/logger.h
 
 include/drow.h:
 
@@ -170,3 +150,5 @@ include/drow.h:
 /opt/homebrew/include/SDL2/SDL_locale.h:
 
 /opt/homebrew/include/SDL2/SDL_misc.h:
+
+../common/logger/logger.h:

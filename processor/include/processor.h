@@ -26,10 +26,11 @@ typedef enum {
     CMD_JBE   = 16,
     CMD_JNE   = 17,
     CMD_JMP   = 18,
-    CMD_PUSHR = 19,
-    CMD_POP   = 20,
-    CMD_CALL  = 21,
-    CMD_RET   = 22,
+    CMD_POP   = 19,
+    CMD_CALL  = 20,
+    CMD_RET   = 21,
+    CMD_DROW  = 22,
+    CMD_SQR   = 23,
 } commands_name_t;
 
 typedef struct {
@@ -55,16 +56,18 @@ const commands_t commands[] = {{CMD_PUSH,  1},
                                {CMD_JBE,   1},
                                {CMD_JNE,   1},
                                {CMD_JMP,   1},
-                               {CMD_PUSHR, 1},
                                {CMD_POP,   1},
                                {CMD_CALL,  1},
-                               {CMD_RET,   0}};
+                               {CMD_RET,   0},
+                               {CMD_DROW,  0},
+                               {CMD_SQR,   0}};
 
 //====================================================================================================
 
 typedef struct {
     unsigned char* code;
     double registres[8];
+    double ram[100];
     size_t size;
 
     my_stack_t* stk;
@@ -75,7 +78,7 @@ void processor_ctor(processor_t* processor, size_t code_size);
 void processor_dtor(processor_t* processor);
 
 size_t get_code(FILE* istream, processor_t* processor, size_t code_size);
-void run(processor_t* processor);
+void run(processor_t* processor, FILE* ostream);
 
 //====================================================================================================
 

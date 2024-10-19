@@ -20,14 +20,14 @@ LIBS_DIR = ../build/libs
 
 INCLUDES_STACK = ../stack/include
 INCLUDES_COMMON = ../common/logger ../common/parse_arguments
-SOURCES = main.cpp proc_arg_parser.cpp processor.cpp proc_verify.cpp
+SOURCES = main.cpp proc_arg_parser.cpp processor.cpp proc_verify.cpp drow.cpp
 OBJECTS = $(addprefix $(BUILD_DIR)/src/, $(SOURCES:%.cpp=%.o))
 DEPS = $(OBJECTS:%.o=%.d)
 
 EXECUTABLE = build/proc
-CFLAGS += -I$(INCLUDE_DIR) -I$(INCLUDES_STACK) $(addprefix -I, $(INCLUDES_COMMON))
-LDFLAGS = -L$(LIBS_DIR) -lstack -lcommon
-
+CFLAGS += -I$(INCLUDE_DIR) -I$(INCLUDES_STACK) $(addprefix -I, $(INCLUDES_COMMON)) -I/opt/homebrew/include
+LDFLAGS += -L$(LIBS_DIR) -lstack -lcommon
+LDFLAGS += -L/opt/homebrew/lib -lSDL2
 
 all: $(EXECUTABLE)
 
