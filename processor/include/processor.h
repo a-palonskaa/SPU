@@ -68,7 +68,9 @@ typedef struct {
     unsigned char* code;
     double registres[8];
     double ram[100];
+
     size_t size;
+    size_t ip;
 
     my_stack_t* stk;
     my_stack_t* addr_stk;
