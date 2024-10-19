@@ -23,10 +23,11 @@ typedef enum {
     CMD_JBE   = 16,
     CMD_JNE   = 17,
     CMD_JMP   = 18,
-    CMD_PUSHR = 19,
-    CMD_POP   = 20,
-    CMD_CALL  = 21,
-    CMD_RET   = 22,
+    CMD_POP   = 19,
+    CMD_CALL  = 20,
+    CMD_RET   = 21,
+    CMD_DROW  = 22,
+    CMD_SQR   = 23,
 } commands_name_t;
 
 typedef struct {
@@ -53,10 +54,11 @@ const commands_t commands[] = {{CMD_PUSH,  "push", 1},
                                {CMD_JBE,   "jbe",  1},
                                {CMD_JNE,   "jne",  1},
                                {CMD_JMP,   "jmp",  1},
-                               {CMD_PUSHR, "push", 1},
                                {CMD_POP,   "pop",  1},
                                {CMD_CALL,  "call", 1},
-                               {CMD_RET,   "ret",  0}};
+                               {CMD_RET,   "ret",  0},
+                               {CMD_DROW,  "drow", 0},
+                               {CMD_SQR,   "sqr",  0}};
 
 const size_t commands_size = sizeof(commands) / sizeof(commands[0]);
 

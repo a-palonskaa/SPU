@@ -18,10 +18,12 @@ static void second_pass_compilation(fixup_t* fixup, name_table_t* name_table, un
 static void parse_register(unsigned char* cmd, unsigned char* code);
 static status_t parse_number(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt);
 static void parse_push(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt);
+static void parse_pop(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt);
 static status_t parse_if_label(unsigned char* cmd, name_table_t* name_table, size_t bytes_cnt);
 static status_t parse_if_has_label(unsigned char* cmd, unsigned char* code, name_table_t* name_table,
                                    size_t* bytes_cnt, fixup_t* fixup);
 
+static unsigned char get_arg_type(unsigned char* cmd);
 static size_t get_double(unsigned char* buffer, double* number);
 static ssize_t get_uint(unsigned char* buffer, size_t* number);
 
@@ -36,8 +38,11 @@ static size_t print_register(char* cmd, char* code);
 
 const size_t LABELS_AMOUNT = 10;
 const char* SIGNATURE = "aliffka";
-const char* VERSION = "3.0";
+const char* VERSION = "4.3";
 
+const unsigned char REG_TYPE = 1 << 1;
+const unsigned char NUM_TYPE = 1 << 2;
+const unsigned char RAM_TYPE = 1 << 3;
 //==================================================================================================
 
 void assemble(FILE* istream, FILE* ostream) {
@@ -82,7 +87,18 @@ void assemble(FILE* istream, FILE* ostream) {
                 return;
             }
             case 0: {
+                unsigned char push = (unsigned char) CMD_PUSH;
+                memcpy(&code[bytes_cnt], &push, sizeof(char));
+                bytes_cnt += sizeof(char);
                 parse_push(cmd, code, &bytes_cnt);
+                continue;
+            }
+            case (CMD_POP - 1): {
+                unsigned char pop = (unsigned char) CMD_POP;
+                memcpy(&code[bytes_cnt], &pop, sizeof(char));
+                bytes_cnt += sizeof(char);
+
+                parse_pop(cmd, code, &bytes_cnt);
                 continue;
             }
             default:
@@ -111,7 +127,6 @@ void assemble(FILE* istream, FILE* ostream) {
             free(code);
             return;
         }
-
     }
 
     second_pass_compilation(fixup, name_table, code);
@@ -177,6 +192,28 @@ void print_header(FILE* ostream, size_t bytes_cnt) {
 }
 
 //===================================================================================================
+
+
+static unsigned char get_arg_type(unsigned char* cmd) {
+    assert(cmd != nullptr);
+
+    unsigned char arg_type_byte = 0;
+
+    if (strstr((const char*) cmd, "[") && (strstr((const char*) cmd, "]"))) {
+        arg_type_byte = RAM_TYPE;
+    }
+
+    if (strstr((const char*) cmd, "+") != nullptr) {
+        arg_type_byte |= REG_TYPE | NUM_TYPE;
+    }
+    else if (strstr((const char*) cmd, "x") != nullptr) {
+        arg_type_byte |= REG_TYPE;
+    }
+    else {
+        arg_type_byte |= NUM_TYPE;
+    }
+    return arg_type_byte;
+}
 
 static size_t get_double(unsigned char* buffer, double* number) {
     assert(buffer != nullptr);
@@ -346,27 +383,27 @@ static status_t parse_if_has_label(unsigned char* cmd, unsigned char* code, name
 
     return SYNTAX_ERROR;
 }
-
+//ХУЙНЯ - optimization (no copypast<3) ++ ERRORS(SYNTAX ERRORS FOR EX)
 static void parse_push(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt) {
     assert(cmd != nullptr);
     assert(code != nullptr);
     assert(bytes_cnt != nullptr);
 
-    if (strstr((const char*) cmd, "x") != nullptr) {
-        unsigned char pushr = (unsigned char) CMD_PUSHR;
-        memcpy(&code[*bytes_cnt], &pushr, sizeof(char)); //NOTE - careful!
-        *bytes_cnt += sizeof(char);
+    unsigned char arg_type_byte = get_arg_type(cmd);
 
-        parse_register(cmd + 4, &code[*bytes_cnt]);
+    memcpy(&code[*bytes_cnt], &arg_type_byte, sizeof(char));
+    *bytes_cnt += sizeof(char);
+
+    cmd += 4;
+    if (arg_type_byte & REG_TYPE) {
+        parse_register(cmd, &code[*bytes_cnt]);
+        cmd = (unsigned char*) strstr((const char*) cmd, "+") + 1;
         *bytes_cnt += sizeof(char);
     }
-    else {
-        unsigned char push = (unsigned char) CMD_PUSH;
-        memcpy(&code[*bytes_cnt], &push, sizeof(char));
-        *bytes_cnt += sizeof(char);
 
+    if (arg_type_byte & NUM_TYPE) {
         double number = 0;
-        get_double(cmd + 4, &number);
+        get_double(cmd, &number);
 #ifdef DEBUG
         unsigned char dbl[8];
         memcpy(dbl, &number, 8);
@@ -378,6 +415,29 @@ static void parse_push(unsigned char* cmd, unsigned char* code, size_t* bytes_cn
 
         memcpy(&code[*bytes_cnt], &number, sizeof(double));
         *bytes_cnt += sizeof(double);
+    }
+}
+
+static void parse_pop(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt) {
+    assert(cmd != nullptr);
+    assert(code != nullptr);
+    assert(bytes_cnt != nullptr);
+
+    unsigned char arg_type_byte = get_arg_type(cmd);
+
+    memcpy(&code[*bytes_cnt], &arg_type_byte, sizeof(char));
+    *bytes_cnt += sizeof(char);
+
+    if (arg_type_byte & REG_TYPE) {
+        parse_register(cmd + 4, &code[*bytes_cnt]);
+        *bytes_cnt += sizeof(char);
+    }
+
+    if (arg_type_byte & NUM_TYPE) {
+        size_t addr = 0;
+        get_uint(cmd + 4, &addr);
+        memcpy(&code[*bytes_cnt], &addr, sizeof(size_t));
+        *bytes_cnt += sizeof(size_t);
     }
 }
 

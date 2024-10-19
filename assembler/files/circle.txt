@@ -1,0 +1,42 @@
+push 0
+pop ax
+push 0
+pop bx
+for_bx:
+push 0
+pop dx
+for_ax:
+push 4.5
+push ax
+sub
+sqr
+push 4.5
+push bx
+sub
+sqr
+add
+push 21
+ja no:
+push bx
+push 10
+mul
+push ax
+add
+pop cx
+push 255
+pop [cx]
+not:
+push ax + 1
+pop ax
+push ax
+push 10
+jb for_ax:
+push 0
+pop ax
+push bx + 1
+pop bx
+push bx
+push 10
+jb for_bx:
+drow
+hlt
