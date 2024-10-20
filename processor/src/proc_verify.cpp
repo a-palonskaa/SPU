@@ -7,7 +7,7 @@
 //====================================================================================================
 
 const char* MY_SIGNATURE = "aliffka";
-const char* CURRENT_VERSION = "4.3";
+const char* CURRENT_VERSION = "5.1";
 
 //====================================================================================================
 
@@ -29,6 +29,7 @@ verify_t verify_file(FILE* istream, size_t* bytes_cnt) {
         LOG(ERROR, "INAVALID FILE SIGNATURE\n");
         return UNKNOWN_CREATOR;
     }
+
     if (strstr(version, CURRENT_VERSION) == nullptr) {
         LOG(ERROR, "INAPPROPRIATE VERSION OF CODE\n");
         return INAPPROPRIATE_VERSION;
@@ -71,25 +72,34 @@ verify_t verify_processor(processor_t* processor) {
 
 //====================================================================================================
 
-void processor_dump(FILE* ostream, processor_t* processor, size_t id) {
+void processor_dump(FILE* ostream, processor_t* processor, const char* file, size_t line, const char* func) {
     assert(processor != nullptr);
     verify_t error_status = verify_processor(processor);
 
+    fprintf(ostream, "%s:%zu(%s)\n", file, line, func);
+
     fprintf(ostream, "[error status]: %s\n", str_error_status(error_status));
+
     for (size_t i = 0; i < processor->size; i++) {
         fprintf(ostream, "%2zx ", i);
     }
+
     fprintf(ostream, "\n");
+
     for (size_t i = 0; i < processor->size; i++) {
         fprintf(ostream, "%2x ", processor->code[i]);
     }
-    for (size_t i = 0; i < id; i++) {
+
+    for (size_t i = 0; i < processor->ip; i++) {
         fprintf(ostream, "-");
     }
+
     fprintf(ostream, "^");
-    for (size_t i = id; i < processor->size; i++) {
+
+    for (size_t i = processor->ip; i < processor->size; i++) {
         fprintf(ostream, "-");
     }
+
     fprintf(ostream, "\n");
 }
 

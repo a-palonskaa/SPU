@@ -120,6 +120,13 @@ void run(processor_t* processor, FILE* ostream) {
                 stack_push(processor->stk, &value);
                 break;
             }
+            case CMD_POP: {
+                processor->ip++;
+                double value = 0;
+                stack_pop(processor->stk, &value);
+                *get_arg_pop(processor, &processor->ip) = value;
+                break;
+            }
             case CMD_ADD: {
                 double elm1 = 0, elm2 = 0, result = 0;
                 stack_pop(processor->stk, &elm2);
@@ -156,13 +163,6 @@ void run(processor_t* processor, FILE* ostream) {
                 processor->ip++;
                 break;
             }
-            case CMD_OUT: {
-                double result = 0;
-                stack_pop(processor->stk, &result);
-                fprintf(ostream, "Result is %f\n", result);
-                processor->ip++;
-                break;
-            }
             case CMD_SQRT: {
                 double elm = 0;
                 stack_pop(processor->stk, &elm);
@@ -187,13 +187,36 @@ void run(processor_t* processor, FILE* ostream) {
                 processor->ip++;
                 break;
             }
-            case CMD_DUMP: {
-                stack_dump(processor->stk, __FILE__, __LINE__, __func__);
+            case CMD_SQR: {
+                double elm1 = 0, elm2 = 0;
+                stack_pop(processor->stk, &elm1);
+                elm2 = elm1 * elm1;
+                stack_push(processor->stk, &elm2);
                 processor->ip++;
                 break;
             }
-            case CMD_HLT: {
-                run_flag = 0;
+            case CMD_POW: {
+                double elm1 = 0, elm2 = 0, result = 0;
+                stack_pop(processor->stk, &elm2);
+                stack_pop(processor->stk, &elm1);
+                result = pow(elm1, elm2);
+                stack_push(processor->stk, &result);
+                processor->ip++;
+                break;
+            }
+            case CMD_ABS: {
+                double elm = 0, result = 0;
+                stack_pop(processor->stk, &elm);
+                result = fabs(elm);
+                stack_push(processor->stk, &result);
+                processor->ip++;
+                break;
+            }
+            case CMD_LOG: {
+                double elm = 0, result = 0;
+                stack_pop(processor->stk, &elm);
+                result = log(elm);
+                stack_push(processor->stk, &result);
                 processor->ip++;
                 break;
             }
@@ -249,13 +272,6 @@ void run(processor_t* processor, FILE* ostream) {
                 processor->ip = address;
                 break;
             }
-            case CMD_POP: {
-                processor->ip++;
-                double value = 0;
-                stack_pop(processor->stk, &value);
-                *get_arg_pop(processor, &processor->ip) = value;
-                break;
-            }
             case CMD_CALL: {
                 size_t next_cmd_ip = processor->ip + 1 + sizeof(size_t);
                 stack_push(processor->addr_stk, &next_cmd_ip);
@@ -270,17 +286,26 @@ void run(processor_t* processor, FILE* ostream) {
                 processor->ip = addr;
                 break;
             }
+            case CMD_OUT: {
+                double result = 0;
+                stack_pop(processor->stk, &result);
+                fprintf(ostream, "Result is %f\n", result);
+                processor->ip++;
+                break;
+            }
+            case CMD_HLT: {
+                run_flag = 0;
+                processor->ip++;
+                break;
+            }
             case CMD_DROW: {
                 processor->ip++;
                 drow(processor->ram);
                 break;
             }
-            case CMD_SQR: {
+            case CMD_DUMP: {
+                processor_dump(stdout, processor, _POS);
                 processor->ip++;
-                double elm1 = 0, elm2 = 0;
-                stack_pop(processor->stk, &elm1);
-                elm2 = elm1 * elm1;
-                stack_push(processor->stk, &elm2);
                 break;
             }
             default: {
@@ -349,6 +374,7 @@ size_t get_double(unsigned char* buffer, double* number) {
     double power = 0;
     size_t i = 0;
     int sign = 0;
+
     for (; isspace(buffer[i]); i++) {
         ;
     }
@@ -365,10 +391,12 @@ size_t get_double(unsigned char* buffer, double* number) {
     if (buffer[i] =='.') {
         i++;
     }
+
     for (power = 1; isdigit(buffer[i]); i++) {
         val = 10 * val + (buffer[i] - '0');
         power *= 10;
     }
+
     *number = sign * val / power;
     return i;
 }
@@ -376,6 +404,7 @@ size_t get_double(unsigned char* buffer, double* number) {
 ssize_t get_int(unsigned char* buffer, unsigned char* number) {
     size_t i = 0;
     unsigned int val = 0;
+
     for (; isspace(buffer[i]); i++) {
         ;
     }
@@ -383,6 +412,7 @@ ssize_t get_int(unsigned char* buffer, unsigned char* number) {
     for (; isdigit(buffer[i]); i++) {
         val = 10 * val + (buffer[i] - '0');
     }
+
     if (val) {
         *number = (unsigned char) val;
         return (ssize_t) i;
@@ -426,9 +456,12 @@ static double get_arg_push(processor_t* processor, size_t* ip) {
     if (arg_type & RAM_TYPE) {
         return processor->ram[(size_t) result];
     }
-
     return result;
 }
+
+// TODO: add general mask proccessing: get_arg + validate (debug)
+// TODO: typedef immediate (elemement типо не дабл), imm
+
 
 static double* get_arg_pop(processor_t* processor, size_t* ip) {
     assert(processor != nullptr);
@@ -445,21 +478,19 @@ static double* get_arg_pop(processor_t* processor, size_t* ip) {
             address += number;
 
         }
+
         if (arg_type & REG_TYPE){
-            //printf("pop to a op\n");
             unsigned char reg = 0;
             memcpy(&reg, &processor->code[*ip], sizeof(char));
             *ip += sizeof(char);
             address += processor->registres[(size_t) reg - 1];
         }
-        printf("popped to %zu\n", (size_t) address);
         return &processor->ram[(size_t) address];
     }
 
     unsigned char reg = 0;
     memcpy(&reg, &processor->code[*ip], sizeof(char));
     *ip += sizeof(char);
-    //printf("will pop to reg, %zu\n", (size_t) reg - 1);
     return &processor->registres[(size_t) reg - 1];
 }
 
@@ -467,7 +498,6 @@ static double* get_arg_pop(processor_t* processor, size_t* ip) {
 
 static int are_doubles_equal(const double a, const double b) {
     const double epsilon = 1e-8;
-
     return fabs(a - b) <= epsilon * max_three(1, fabs(a), fabs(b));
 }
 

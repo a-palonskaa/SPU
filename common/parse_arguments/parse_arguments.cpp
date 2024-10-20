@@ -36,7 +36,12 @@ cmd_error_t ArgParser(int argc, const char* argv[], void* flags,
                 }
                 else {
                     argc--;
-                    state = commands[i].change(flags, *++argv);
+                    argv++;
+                    if (strstr(*argv, "-") != nullptr && strstr(*argv, "\"-") == nullptr) {
+                        printf("ERROR OF COMMAND\n");
+                        return INPUT_ERROR;
+                    }
+                    state = commands[i].change(flags, *argv);
                 }
 
                 if (state == INPUT_ERROR) {
@@ -52,7 +57,3 @@ cmd_error_t ArgParser(int argc, const char* argv[], void* flags,
     }
     return validate_input(flags);
 }
-
-//FIXME - "-ggg" так можно - argc, но такой - елси первый символ не -, то всё гуд
-// -i -o
-// -i "-input.txt"

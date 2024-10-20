@@ -14,9 +14,9 @@ CFLAGS = -Wall -std=c++17 -Wall -Wextra -Weffc++ -Wc++14-compat -Wmissing-declar
 
 LDFLAGS =
 
-SOURCES = logger/logger.cpp parse_arguments/parse_arguments.cpp
+SOURCES = logger/logger.cpp parse_arguments/parse_arguments.cpp vector/vector.cpp text/text_lib.cpp
 BUILD_DIR = ../build
-DIRS = logger parse_arguments
+DIRS = logger parse_arguments vector text
 COMMON_DIR = common
 
 OBJECTS = $(addprefix $(BUILD_DIR)/$(COMMON_DIR)/, $(SOURCES:%.cpp=%.o))

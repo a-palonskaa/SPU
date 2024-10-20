@@ -12,6 +12,8 @@ static void print_number(FILE* ostream, unsigned char* code);
 static void print_register(FILE* ostream, unsigned char* code);
 
 void disassemble(FILE* istream, FILE* ostream) {
+
+    // TODO: create buffer
     size_t i = 0;
     size_t code_size = (size_t) find_file_size(istream);
     unsigned char* code = (unsigned char*) calloc(code_size, sizeof(char));
@@ -28,7 +30,18 @@ void disassemble(FILE* istream, FILE* ostream) {
     }
 
     while (i < code_size) {
+
+
+
         switch (code[i]) {
+#define DEF_COMMAND_(cmd, name, has_arg, _, _)
+    case CMD_##cmd: { \
+        fprintf(ostream, name " ");
+        if (has_arg)
+            ...
+    } \
+#include "cmd_def.h"
+#undef DEF_COMMAND_
             case CMD_PUSH: {
                 fprintf(ostream, "push ");
                 print_number(ostream, &code[++i]);

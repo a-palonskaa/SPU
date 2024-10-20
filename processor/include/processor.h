@@ -31,6 +31,9 @@ typedef enum {
     CMD_RET   = 21,
     CMD_DROW  = 22,
     CMD_SQR   = 23,
+    CMD_POW   = 24,
+    CMD_ABS   = 25,
+    CMD_LOG   = 26,
 } commands_name_t;
 
 typedef struct {
@@ -60,7 +63,10 @@ const commands_t commands[] = {{CMD_PUSH,  1},
                                {CMD_CALL,  1},
                                {CMD_RET,   0},
                                {CMD_DROW,  0},
-                               {CMD_SQR,   0}};
+                               {CMD_SQR,   0},
+                               {CMD_POW,   0},
+                               {CMD_ABS,   0},
+                               {CMD_LOG,   0}};
 
 //====================================================================================================
 
