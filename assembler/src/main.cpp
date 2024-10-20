@@ -43,10 +43,12 @@ int main(int argc, const char* argv[]) {
         LOG(ERROR, "FAILED TO CLOSE INPUT FILE\n" STRERROR(errno));
         return EXIT_FAILURE;
     }
+
     if (fclose(ostream) == EOF) {
         LOG(ERROR, "FAILED TO CLOSE OUTPUT FILE\n" STRERROR(errno));
         return EXIT_FAILURE;
     }
+
     if (fclose(logger_stream) == EOF) {
         perror("FAILED TO CLOSE LOGGER OUTPUT FILE\n");
         return EXIT_FAILURE;

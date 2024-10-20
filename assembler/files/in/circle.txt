@@ -2,10 +2,10 @@ push 0
 pop ax
 push 0
 pop bx
-for_bx:
-push 0
-pop dx
-for_ax:
+for1:
+push 0 ;test
+pop dx ;test
+for2:
 push 4.5
 push ax
 sub
@@ -30,13 +30,13 @@ push ax + 1
 pop ax
 push ax
 push 10
-jb for_ax:
+jb for2:
 push 0
 pop ax
 push bx + 1
 pop bx
 push bx
 push 10
-jb for_bx:
+jb for1:
 drow
 hlt

@@ -1,21 +1,18 @@
-src/asm.cpp:337 (parse_if_label)
-[INFO] 19.10.2024 12:40:46 
-	[DEBUG INFO]: label with name for_bx (len = 6) and addr 26 is adding
-src/asm.cpp:337 (parse_if_label)
-[INFO] 19.10.2024 12:40:46 
-	[DEBUG INFO]: label with name for_ax (len = 6) and addr 39 is adding
-src/asm.cpp:365 (parse_if_has_label)
-[INFO] 19.10.2024 12:40:46 
-	[DEBUG INFO]: label with name no (len = 2)
-src/asm.cpp:337 (parse_if_label)
-[INFO] 19.10.2024 12:40:46 
-	[DEBUG INFO]: label with name not (len = 3) and addr 123 is adding
-src/asm.cpp:365 (parse_if_has_label)
-[INFO] 19.10.2024 12:40:46 
-	[DEBUG INFO]: label with name for_ax (len = 6)
-src/asm.cpp:365 (parse_if_has_label)
-[INFO] 19.10.2024 12:40:46 
-	[DEBUG INFO]: label with name for_bx (len = 6)
-src/asm.cpp:139 (assemble)
-[INFO] 19.10.2024 12:40:46 
-	SUCCESSFULLY FINISHED ASSEMBLING
+text/text_lib.cpp:25 (find_file_size)
+[INFO] 21.10.2024 00:12:03 
+	File size: 90
+text/text_lib.cpp:46 (count_text_lines)
+[INFO] 21.10.2024 00:12:03 
+	Lines amount: 15
+text/text_lib.cpp:79 (parse_text)
+[INFO] 21.10.2024 00:12:03 
+	Text was successfully parsed
+text/text_lib.cpp:137 (text_ctor)
+[INFO] 21.10.2024 00:12:03 
+	Text structure was successfully created and initialized
+text/text_lib.cpp:152 (text_dtor)
+[INFO] 21.10.2024 00:12:03 
+	Text stracture was sucessfully destructed
+src/asm.cpp:89 (assemble)
+[INFO] 21.10.2024 00:12:03 
+	Successfully finished assembling

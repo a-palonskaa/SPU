@@ -19,7 +19,7 @@ INCLUDE_DIR = include
 LIBS_DIR = ../build/libs
 
 INCLUDES_STACK = ../stack/include
-INCLUDES_COMMON = ../common/logger ../common/parse_arguments
+INCLUDES_COMMON = ../common/logger ../common/parse_arguments ../common/vector ../common/includes ../common/text
 SOURCES = main.cpp asm.cpp asm_arg_parser.cpp fixup.cpp label.cpp
 OBJECTS = $(addprefix $(BUILD_DIR)/src/, $(SOURCES:%.cpp=%.o))
 DEPS = $(OBJECTS:%.o=%.d)
@@ -27,7 +27,6 @@ DEPS = $(OBJECTS:%.o=%.d)
 EXECUTABLE = build/asm
 CFLAGS += -I$(INCLUDE_DIR) -I$(INCLUDES_STACK) $(addprefix -I, $(INCLUDES_COMMON))
 LDFLAGS = -L$(LIBS_DIR) -lstack -lcommon
-
 
 all: $(EXECUTABLE)
 

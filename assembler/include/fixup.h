@@ -8,6 +8,7 @@ typedef struct {
     size_t label_addr;
 } parent_t;
 
+// TODO: vector
 typedef struct {
     parent_t* parents;
     size_t size;

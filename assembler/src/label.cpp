@@ -5,112 +5,89 @@
 #include <ctype.h>
 #include "logger.h"
 #include "label.h"
+#include "vector.h"
 
-static ssize_t find_name(name_table_t* name_table, char* name);
+static ssize_t find_name(vector_t* name_table, char* name);
 
-const size_t MIN_LABEL_CAPACITY = 2;
-
-name_table_t* new_name_table(size_t capacity) {
-    name_table_t* name_table = (name_table_t*) calloc(sizeof(name_table_t), sizeof(char));
-    if (name_table == nullptr) {
-        LOG(ERROR, "MEMORY ALLOCATION ERROR" STRERROR(errno));
-        return nullptr;
-    }
-
-    if (capacity <  MIN_LABEL_CAPACITY) {
-        capacity = MIN_LABEL_CAPACITY;
-    }
-
-    name_table->label = (label_t*) calloc(capacity, sizeof(label_t));
-    if (name_table->label == nullptr) {
-        LOG(ERROR, "MEMORY ALLOCATION ERROR" STRERROR(errno));
-        free(name_table);
-        return nullptr;
-    }
-
-    name_table->size = 0;
-    name_table->capacity = capacity;
-
-    for (size_t i = 0; i < capacity; i++) {
-        name_table->label[i].cmd_ptr = -1;
-    }
-
-    return name_table;
-}
-
-void name_table_dtor(name_table_t* name_table) {
-    free(name_table->label);
-    name_table->label = nullptr;
-
-    name_table->size = 0;
-    name_table->capacity = 0;
-
-    free(name_table);
-    name_table = nullptr;
-}
+//==================================================================================================
+//
+// void name_table_dump(void* name_table, FILE* ostream) {
+//     assert(name_table != nullptr);
+//
+//     for (size_t i = 0; i < name_table->size; i++) {
+//         fprintf(ostream, "[%zu]\n\t[label name]: %s\n\t[label points at]: %p\n-------------\n",
+//                          i, name_table->label[i].name, (void*) name_table->label[i].offset);
+//     }
+// }
 
 //==================================================================================================
 
-void name_table_dump(name_table_t* name_table, FILE* ostream) {
-    assert(name_table != nullptr);
-
-    for (size_t i = 0; i < name_table->size; i++) {
-        fprintf(ostream, "[%zu]\n\t[label name]: %s\n\t[label points at]: %p\n-------------\n",
-                         i, name_table->label[i].name, (void*) name_table->label[i].cmd_ptr);
-    }
-
-}
-
-//==================================================================================================
-
-ssize_t return_label_address(name_table_t* name_table, char* name, size_t* i) {
+ssize_t return_label_address(vector_t* name_table, char* name, size_t* i) {
     assert(name_table != nullptr);
     assert(name != nullptr);
+    assert(i != nullptr);
 
     ssize_t index = find_name(name_table, name);
 
     if (index == -1) {
-        strcpy(name_table->label[name_table->size].name, name);
-        *i = name_table->size;
-        name_table->label[name_table->size++].cmd_ptr = -1;
+        label_t label = {};
+        strncpy(label.name, name, 10);
+        label.offset = -1;
+        printf("new label name is %s %p %p\n", name, &label.name, &label.offset);
+        vector_push_back_((vector_t*) name_table, &label, sizeof(label_t));
+        *i = (vector_size(name_table) / sizeof(label_t)) - 1;
+
+        printf("[check]:  %s || %p || %p || %p\n", ((label_t*) vector_element_ptr(name_table, (size_t) 0, sizeof(label_t)))->name,
+        ((label_t*) vector_element_ptr(name_table, (size_t) 0, sizeof(label_t)))->name,
+        ((label_t*) vector_element_ptr(name_table, (size_t) 0, sizeof(label_t))),
+        strstr(name, (char*) vector_element_ptr(name_table, (size_t) 0, sizeof(label_t))));
+
         return -1;
     }
 
     *i = (size_t) index;
-    return name_table->label[index].cmd_ptr;
+    return ((label_t*) vector_element_ptr(name_table, (size_t) index, sizeof(label_t)))->offset;
 }
 
-bool add_label(name_table_t* name_table, char* name, size_t cmd_address) {
+label_status_t add_label(vector_t* name_table, char* name, size_t cmd_address) {
     assert(name_table != nullptr);
     assert(name != nullptr);
     assert(cmd_address != 0);
 
     ssize_t index = find_name(name_table, name);
+    printf("FOUND index is %zu\n", index);
     if (index == -1) {
-        strcpy(name_table->label[name_table->size].name, name);
-        name_table->label[name_table->size++].cmd_ptr = (ssize_t) cmd_address;
-        return true;
+        label_t label = {};
+        strncpy(label.name, name, 10);
+        label.offset = (ssize_t) cmd_address;
+        printf("new label name is %s %p %p\n", name, &label.name, &label.offset);
+        vector_push_back(name_table, &label);
+        printf("PUSHED\n");
+        return NEW;
     }
 
-    if (name_table->label[index].cmd_ptr != -1) {
-        return false;
+    if (((label_t*) vector_element_ptr(name_table, (size_t) index, sizeof(label_t)))->offset != -1) {
+        return EXIST;
     }
 
-    name_table->label[index].cmd_ptr = (ssize_t) cmd_address;
-    return true;
+    ((label_t*) vector_element_ptr(name_table, (size_t) index, sizeof(label_t)))->offset = (ssize_t) cmd_address;
+    return ADD;
 }
 
-static ssize_t find_name(name_table_t* name_table, char* name) {
+static ssize_t find_name(vector_t* name_table, char* name) {
     assert(name_table != nullptr);
     assert(name != nullptr);
 
     size_t i = 0;
-    for (; i < name_table->size; i++) {
-        if (strstr(name, name_table->label[i].name) != nullptr) {
+    printf("SIZE IS %zu wanna find %s\n", vector_size(name_table), name);
+    for (; i < vector_size(name_table) / sizeof(label_t); i++) {
+        printf("%p , %p,  %d\n", (char*) name_table->data + sizeof(label_t) * i, ((label_t*) vector_element_ptr(name_table, i, sizeof(label_t)))->name, strstr(name, ((label_t*) vector_element_ptr(name_table, i, sizeof(label_t)))->name) != nullptr);
+        if (strstr(name, ((label_t*) vector_element_ptr(name_table, i, sizeof(label_t)))->name) != nullptr) {
+            printf("did!");
             return (ssize_t) i;
         }
     }
-
+    printf("finished\n");
     return -1;
 }
 //==================================================================================================

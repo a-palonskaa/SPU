@@ -55,8 +55,8 @@ cmd_error_t Help(void* flag, const char* arg) {
 static void PrintHelp() {
     for (size_t i = 0; i < COMMANDS_ARRAY_LENGTH; i++) {
         printf("%10s %10s %-10s" "\n", COMMANDS[i].name,
-                                    COMMANDS[i].long_name,
-                                    COMMANDS[i].description);
+                                       COMMANDS[i].long_name,
+                                       COMMANDS[i].description);
     }
 }
 

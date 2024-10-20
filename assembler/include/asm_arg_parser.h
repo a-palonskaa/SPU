@@ -23,12 +23,11 @@ cmd_error_t Help(void* flags, const char* arg);
 cmd_error_t ValidateInput(const void* flag);
 
 const option_t COMMANDS[] = {
-    // short_name  long_name         changeflag function         description                     has_arg
-        {"-i",  "--input_file",    &ChangeFlagInputFile,      "Read data from the file"          , true},
-        {"-o",  "--output_file",   &ChangeFlagOutputFile,     "Print results in the file "       , true},
-        {"-h",  "--help",          &Help,                     "Help"                             , false},
-        {"-l",  "--logger_output", &ChangeFlagLoggerOutput,   "Print logger messages in the file", true},
-
+// short_name  long_name         changeflag function         description                     has_arg
+    {"-i",  "--input_file",    &ChangeFlagInputFile,      "Read data from the file"          , true},
+    {"-o",  "--output_file",   &ChangeFlagOutputFile,     "Print results in the file "       , true},
+    {"-h",  "--help",          &Help,                     "Help"                             , false},
+    {"-l",  "--logger_output", &ChangeFlagLoggerOutput,   "Print logger messages in the file", true},
 };
 
 const size_t COMMANDS_ARRAY_LENGTH = sizeof(COMMANDS) / sizeof(COMMANDS[0]);
