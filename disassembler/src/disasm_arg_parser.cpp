@@ -1,10 +1,11 @@
-#include "disasm_arg_parser.h"
 #include <assert.h>
+#include "disasm_arg_parser.h"
+#include "buffer_holder.h"
 
 //----------------------------------------------------------------------------------------------
-const char* LOGGER_OUTPUT = "files/logger.txt";
-const char* OUTPUT = "files/out1.txt"; //when form root make processor/, form local without
-const char* INPUT = "files/in1.asm";
+const char* LOGGER_OUTPUT = "./disassembler/files/logger.txt";
+const char* OUTPUT = "./disassembler/files/out1.txt"; //when form root make processor/, form local without
+const char* INPUT = "./disassembler/files/in1.asm";
 
 static void InitiallizeValidationFlags(void* flag);
 static void PrintHelp();;

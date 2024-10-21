@@ -423,17 +423,6 @@ ssize_t get_int(unsigned char* buffer, unsigned char* number) {
 }
 
 
-ssize_t find_file_size(FILE* istream) {
-    assert(istream);
-
-    struct stat file_data = {};
-
-    if (fstat(fileno(istream), &file_data) == -1) {
-        return -1;
-    }
-    return (ssize_t) file_data.st_size;
-}
-
 static double get_arg_push(processor_t* processor, size_t* ip) {
     assert(processor != nullptr);
     assert(ip != nullptr);

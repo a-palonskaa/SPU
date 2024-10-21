@@ -1,7 +1,10 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-// TODO: вынести команды в общий инклюд на asm, disasm, proc
+typedef unsigned char command;
+typedef double imm;
+typedef unsigned char reg;
+typedef size_t addr;
 
 typedef enum {
     CMD_PUSH  = 1,
@@ -33,7 +36,7 @@ typedef enum {
 } commands_name_t;
 
 typedef struct {
-    commands_name_t name; // TODO: rename to code
+    commands_name_t code;
     const char* alias;
     size_t args_amount;
 } commands_t;

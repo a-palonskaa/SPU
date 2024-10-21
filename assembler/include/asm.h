@@ -7,11 +7,6 @@
 #include "vector.h"
 //==================================================================================================
 
-typedef unsigned char command;
-typedef double imm;
-typedef unsigned char reg;
-typedef size_t addr;
-
 typedef enum {
     ASM_NO_ERRORS = 0,
     ASM_MEM_ERROR = 1,

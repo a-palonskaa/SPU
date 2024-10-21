@@ -20,7 +20,7 @@ cmd_error_t ArgParser(int argc, const char* argv[], void* flags,
         int has_arg_validate = 0;
 
         for (size_t i = 0; i < COMMANDS_ARRAY_LENGTH; i++) {
-            if(!(strcmp(*argv, commands[i].name) &&
+            if(!(strcmp(*argv, commands[i].code) &&
                  strcmp(*argv, commands[i].long_name))) {
 
                 has_arg_validate++;

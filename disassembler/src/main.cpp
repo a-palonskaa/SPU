@@ -21,7 +21,7 @@ int main(int argc, const char* argv[]) {
     FILE* logger_stream = fopen(flags.logger_output_file, "w");
     if (logger_stream == nullptr) {
         logger_stream = stderr;
-        fprintf(stderr, "FAILED TO OPEN LOGGER OUTPUT FILE");
+        fprintf(stderr, "FAILED TO OPEN LOGGER OUTPUT FILE\n");
     }
 
     LoggerSetFile(logger_stream);

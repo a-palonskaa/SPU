@@ -15,9 +15,7 @@
 #include "define_colors.h"
 #include "define.h"
 
-    // TODO: sscanf
-    // TODO: syntax error
-    // TODO: invalid cmd - pop ax + 4,   pop (просто) - valid
+// TODO: sscanf, syntax error, invalid cmd - pop ax + 4,   pop (просто) - valid
 
 //==================================================================================================
 
@@ -181,7 +179,7 @@ static bool first_pass_compilation(assembler_t* assm) {
                 break;
         }
 
-        memcpy(&assm->code[bytes_cnt], &commands[i].name, sizeof(command));
+        memcpy(&assm->code[bytes_cnt], &commands[i].code, sizeof(command));
         bytes_cnt += sizeof(command);
 
         if (cmd == assm->text.strings[line_cnt].begin) {
@@ -380,12 +378,12 @@ static status_t parse_if_label(assembler_t* assm, unsigned char* cmd, size_t byt
     if (strstr((char*) cmd, ":") != nullptr) {
         memcpy(name, cmd, (size_t)(strstr((char*) cmd, ":") - (char*) cmd));
         if (add_label(assm->name_table, name, bytes_cnt) == EXIST) {
-            LOG(ERROR, "[SYNTAX ERROR]: Label %s is already exists\n", name); // TODO better diagnostic(like where, what addr, etc+ colors)
+            LOG(ERROR, "[SYNTAX ERROR]: Label %s is already exists\n", name);
             return SYNTAX_ERROR;
         }
     }
     else {
-        LOG(ERROR, "[SYNTAX ERROR]: Command %s not found\n", cmd); // TODO better diagnostic, invalid what (cmd, reg, number, where, print full srt)
+        LOG(ERROR, "[SYNTAX ERROR]: Command %s not found\n", cmd);
         return SYNTAX_ERROR;
     }
     return CORRECT;
