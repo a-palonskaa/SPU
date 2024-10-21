@@ -67,7 +67,7 @@ vec_err_t vector_push_back_(vector_t* vector, void* src, size_t elm_width) {
 	if (memory_add_status != OK) {
 		return memory_add_status;
 	}
-	printf("\nvector->data %p\n", (char*) vector->data + vector->size);
+
 	memcpy((char*) vector->data + vector->size, src, elm_width);
 	vector->size += elm_width;
 	return OK;

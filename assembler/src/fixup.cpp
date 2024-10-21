@@ -6,19 +6,21 @@
 
 //==================================================================================================
 
-void fixup_dump(fixup_t* fixup, FILE* ostream) {
-    assert(fixup != nullptr);
+void fixup_dump(parent_t* fixup, size_t size, FILE* ostream) {
+    if (ostream == nullptr) {
+        ostream = stdout;
+    }
 
-    fprintf(ostream, "[size]: %zu\n[capacity]: %zu\n", fixup->size, fixup->capacity);
-
-    if (fixup->parents == nullptr) {
-        fprintf(ostream, "fixup->parents adress is nullptr\n");
+    if (fixup == nullptr) {
+        fprintf(ostream, "fixup adress is null\n");
         return;
     }
 
-    for (size_t i = 0; i < fixup->size; i++) {
+    fprintf(ostream, "[size]: %zu\n", size);
+
+    for (size_t i = 0; i < size; i++) {
         fprintf(ostream, "[%zu]:\n\t[label index]: %zu\n\t[lable adress]: %zu\n",
-                         i, fixup->parents[i].label_index, fixup->parents[i].label_addr);
+                         i, fixup[i].label_index, fixup[i].label_addr);
     }
 }
 

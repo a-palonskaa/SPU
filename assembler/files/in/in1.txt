@@ -1,9 +1,9 @@
-push 0
+push 88
 pop ax
-jump:
-push ax
+jump: ;mkjhkn
 push ax
 mul
+push ax
 out
 push ax
 push 1

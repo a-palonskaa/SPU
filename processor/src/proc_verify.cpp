@@ -7,23 +7,19 @@
 //====================================================================================================
 
 const char* MY_SIGNATURE = "aliffka";
-const char* CURRENT_VERSION = "5.1";
-
-//====================================================================================================
-
-static ssize_t get_uint(unsigned char* buffer, size_t* number);
+const char* CURRENT_VERSION = "5.2";
 
 //====================================================================================================
 
 verify_t verify_file(FILE* istream, size_t* bytes_cnt) {
     char signature[50] = "";
     char version[50] = "";
-    char size_info[50] = "";
-    size_t size = 0;
 
     fgets(signature, 50, istream);
     fgets(version, 50, istream);
-    fgets(size_info, 50, istream);
+
+    size_t size = 0;
+    fread(&size, sizeof(size_t), 1, istream);
 
     if (strstr(signature, MY_SIGNATURE) == nullptr) {
         LOG(ERROR, "INAVALID FILE SIGNATURE\n");
@@ -35,7 +31,6 @@ verify_t verify_file(FILE* istream, size_t* bytes_cnt) {
         return INAPPROPRIATE_VERSION;
     }
 
-    get_uint((unsigned char*) strstr(size_info, "[bytes amount]:") + sizeof("[bytes amount]:"), &size);
     *bytes_cnt = size;
 
     LOG(INFO, "FILE WAS VERIFIED\n@%s:[version]:%s\n\n", MY_SIGNATURE, CURRENT_VERSION);
@@ -117,30 +112,6 @@ const char* str_error_status(verify_t error_status) {
         default:
             break;
     }
-}
-
-//====================================================================================================
-
-static ssize_t get_uint(unsigned char* buffer, size_t* number) {
-    assert(buffer != nullptr);
-    assert(number != nullptr);
-
-    size_t i = 0;
-    size_t val = 0;
-
-    for (; !isdigit(buffer[i]); i++) {
-        ;
-    }
-
-    for (; isdigit(buffer[i]); i++) {
-        val = 10 * val + (size_t) (buffer[i] - '0');
-    }
-
-    if (val) {
-        *number = val;
-        return (ssize_t) i;
-    }
-    return -1;
 }
 
 //====================================================================================================

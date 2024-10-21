@@ -5,11 +5,10 @@
 
 #include <stdio.h>
 #include "vector.h"
-// TODO: add vector
 
 typedef struct {
-    char name[NAME_MAX_LEN];  // TODO hard code 10 -> const
-    ssize_t offset; //TODO offset
+    char name[NAME_MAX_LEN];
+    ssize_t offset;
 } label_t;
 
 typedef enum {

@@ -3,22 +3,20 @@ pop ax
 push 0
 pop bx
 for1:
-push 0 ;test
-pop dx ;test
 for2:
-push 4.5
+push 49.5
 push ax
 sub
 sqr
-push 4.5
+push 49.5
 push bx
 sub
 sqr
 add
-push 21
-ja no:
+push 2451
+ja not:
 push bx
-push 10
+push 100
 mul
 push ax
 add
@@ -26,17 +24,21 @@ pop cx
 push 255
 pop [cx]
 not:
-push ax + 1
+push ax
+push 1
+add
 pop ax
 push ax
-push 10
+push 100
 jb for2:
 push 0
 pop ax
-push bx + 1
+push bx
+push 1
+add
 pop bx
 push bx
-push 10
+push 100
 jb for1:
 drow
 hlt

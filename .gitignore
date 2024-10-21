@@ -1,1 +1,5 @@
 .vscode
+build
+assembler/files
+disassembler/files
+processor/files

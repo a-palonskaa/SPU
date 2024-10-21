@@ -36,4 +36,8 @@ asm_error_t assembler_ctor(assembler_t* assm, FILE* istream);
 void assembler_dtor(assembler_t* assm);
 void assemble(FILE* istream, FILE* ostream);
 
+status_t check_for_unused_parameters(unsigned char* cmd);
+void printf_diagnostic(unsigned char* buffer, size_t line_num, unsigned char* comment_ptr, unsigned char* error,
+                       const char* file, size_t line, const char* func, const char* message);
+
 #endif /* ASM_H */

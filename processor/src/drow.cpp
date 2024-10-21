@@ -4,8 +4,8 @@
 
 //====================================================================================================
 
-const size_t X_SIZE = 10;
-const size_t Y_SIZE = 10;
+const size_t X_SIZE = 100;
+const size_t Y_SIZE = 100;
 
 //====================================================================================================
 
@@ -24,7 +24,7 @@ bool SDL_Ctor(SDL_Window** window, SDL_Renderer** renderer) {
     }
 
     *window = SDL_CreateWindow("Operation Memory", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                                   800, 600, SDL_WINDOW_SHOWN);
+                                                   800, 800, SDL_WINDOW_SHOWN);
 
     if (*window == nullptr) {
         LOG(ERROR, "Failed to open a window %s\n", SDL_GetError());
@@ -48,9 +48,9 @@ bool drow(double* ram) {
     assert(ram != nullptr);
 
 #ifdef DEBUG
-    for (size_t i = 0; i < 10; i++) {
-        for (size_t j = 0; j < 10; j++) {
-            printf("%.0f ", *(ram + 10 * i + j));
+    for (size_t i = 0; i < Y_SIZE; i++) {
+        for (size_t j = 0; j < X_SIZE; j++) {
+            printf("%.0f ", *(ram + X_SIZE * i + j));
         }
         printf("\n");
     }
@@ -85,10 +85,10 @@ bool drow(double* ram) {
         for (size_t i = 0; i < Y_SIZE; i++) {
             for (size_t j = 0; j < X_SIZE; j++) {
                 SDL_Rect square = {};
-                square.x = (int) (250 + j * 21);
-                square.y = (int) (150 + i * 21);
-                square.w = 20;
-                square.h = 20;
+                square.x = (int) (150 + j * 4);
+                square.y = (int) (150 + i * 4);
+                square.w = 4;
+                square.h = 4;
 
                 SDL_SetRenderDrawColor(renderer, colors[i * X_SIZE + j].r, colors[i * X_SIZE + j].g,
                                                  colors[i * X_SIZE + j].b, colors[i * X_SIZE + j].a);

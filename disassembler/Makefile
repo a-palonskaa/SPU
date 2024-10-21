@@ -14,7 +14,7 @@ CFLAGS = -Wall -std=c++17 -Wall -Wextra -Weffc++ -Wc++14-compat -Wmissing-declar
 
 LDFLAGS =
 
-BUILD_DIR = build
+BUILD_DIR = ../build/disassembler
 INCLUDE_DIR = include
 LIBS_DIR = ../build/libs
 
@@ -24,7 +24,7 @@ SOURCES = main.cpp disasm.cpp disasm_arg_parser.cpp
 OBJECTS = $(addprefix $(BUILD_DIR)/src/, $(SOURCES:%.cpp=%.o))
 DEPS = $(OBJECTS:%.o=%.d)
 
-EXECUTABLE = build/disasm
+EXECUTABLE = ../build/disassembler/disasm
 CFLAGS += -I$(INCLUDE_DIR) -I$(INCLUDES_STACK) $(addprefix -I, $(INCLUDES_COMMON))
 LDFLAGS = -L$(LIBS_DIR) -lstack -lcommon
 

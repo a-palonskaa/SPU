@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
+#include "define.h"
+#include "define_colors.h"
 #include "disasm.h"
 #include "logger.h"
 #include "parse_arguments.h"

@@ -14,17 +14,17 @@ CFLAGS = -Wall -std=c++17 -Wall -Wextra -Weffc++ -Wc++14-compat -Wmissing-declar
 
 LDFLAGS =
 
-BUILD_DIR = build
+BUILD_DIR = ../build/processor
 INCLUDE_DIR = include
 LIBS_DIR = ../build/libs
 
 INCLUDES_STACK = ../stack/include
-INCLUDES_COMMON = ../common/logger ../common/parse_arguments
+INCLUDES_COMMON = ../common/logger ../common/parse_arguments ../common/includes
 SOURCES = main.cpp proc_arg_parser.cpp processor.cpp proc_verify.cpp drow.cpp
 OBJECTS = $(addprefix $(BUILD_DIR)/src/, $(SOURCES:%.cpp=%.o))
 DEPS = $(OBJECTS:%.o=%.d)
 
-EXECUTABLE = build/proc
+EXECUTABLE = ../build/proc
 CFLAGS += -I$(INCLUDE_DIR) -I$(INCLUDES_STACK) $(addprefix -I, $(INCLUDES_COMMON)) -I/opt/homebrew/include
 LDFLAGS += -L$(LIBS_DIR) -lstack -lcommon
 LDFLAGS += -L/opt/homebrew/lib -lSDL2

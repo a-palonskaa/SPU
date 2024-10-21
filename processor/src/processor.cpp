@@ -112,6 +112,7 @@ void run(processor_t* processor, FILE* ostream) {
 
     processor->ip = 0;
     bool run_flag = 1;
+
     while (run_flag) {
         switch (processor->code[processor->ip]) {
             case CMD_PUSH: {
@@ -129,6 +130,7 @@ void run(processor_t* processor, FILE* ostream) {
             }
             case CMD_ADD: {
                 double elm1 = 0, elm2 = 0, result = 0;
+
                 stack_pop(processor->stk, &elm2);
                 stack_pop(processor->stk, &elm1);
                 result = elm1 + elm2;
@@ -443,7 +445,7 @@ static double get_arg_push(processor_t* processor, size_t* ip) {
         unsigned char reg = 0;
         memcpy(&reg, &processor->code[*ip], sizeof(char));
         *ip += sizeof(char);
-        result += processor->registres[(size_t) reg - 1];
+        result += processor->registres[(size_t) reg];
     }
 
     if (arg_type & NUM_TYPE) {
@@ -476,14 +478,13 @@ static double* get_arg_pop(processor_t* processor, size_t* ip) {
             memcpy(&number, &processor->code[*ip], sizeof(double));
             *ip += sizeof(double);
             address += number;
-
         }
 
         if (arg_type & REG_TYPE){
             unsigned char reg = 0;
             memcpy(&reg, &processor->code[*ip], sizeof(char));
             *ip += sizeof(char);
-            address += processor->registres[(size_t) reg - 1];
+            address += processor->registres[(size_t) reg];
         }
         return &processor->ram[(size_t) address];
     }
@@ -491,7 +492,7 @@ static double* get_arg_pop(processor_t* processor, size_t* ip) {
     unsigned char reg = 0;
     memcpy(&reg, &processor->code[*ip], sizeof(char));
     *ip += sizeof(char);
-    return &processor->registres[(size_t) reg - 1];
+    return &processor->registres[(size_t) reg];
 }
 
 //====================================================================================================
