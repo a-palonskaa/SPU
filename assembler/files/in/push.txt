@@ -1,5 +1,0 @@
-push 0
-pop ax
-push ax + 1
-out
-hlt
