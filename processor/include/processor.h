@@ -23,6 +23,6 @@ void processor_ctor(processor_t* processor, size_t code_size);
 void processor_dtor(processor_t* processor);
 
 size_t get_code(FILE* istream, processor_t* processor, size_t code_size);
-void run(processor_t* processor, FILE* ostream);
+bool run(processor_t* processor, FILE* ostream) ;
 
 #endif /* PROCESSER_H */

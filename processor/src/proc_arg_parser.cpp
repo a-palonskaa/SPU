@@ -2,9 +2,9 @@
 #include <assert.h>
 
 //====================================================================================================
-const char* LOGGER_OUTPUT = "files/logger.txt";
-const char* OUTPUT = "files/out2.asm"; //when form root make processor/, form local without
-const char* INPUT = "files/in3.asm";
+const char* LOGGER_OUTPUT = "./processor/files/logger.txt";
+const char* OUTPUT = "./processor/files/out.txt"; //when form root make processor/, form local without
+const char* INPUT = "./processor/files/in.asm";
 
 static void InitiallizeValidationFlags(void* flag);
 static void PrintHelp();;

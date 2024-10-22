@@ -30,11 +30,12 @@ static void print_double(void* elm, FILE* ostream);
 static void print_addr(void* elm, FILE* ostream);
 
 static double* get_arg(processor_t* processor, size_t* ip);
-
+#ifdef DEBUG
+static bool validate_arg(unsigned char arg_type_byte, commands_name_t cmd);
+#endif /* DEBUG */
 //====================================================================================================
 
 static int are_doubles_equal(const double a, const double b);
-
 static double max_two(const double a, const double b);
 static double max_three(const double a, const double b, const double c);
 
@@ -92,27 +93,20 @@ size_t get_code(FILE* istream, processor_t* processor, size_t code_size) {
         return 0;
     }
 
-#ifdef DEBUG
-    printf("Code size is %zu\n", code_size);
-    for (size_t i = 0; i < code_size; i++) {
-        printf("%zu = %02x \n", i, processor->code[i]);
-    }
-#endif /* DEBUG */
-
     LOG(INFO, "Processor structure is successfully created and initialized.\n");
     return processor->size;
 }
 
 //====================================================================================================
 
-void run(processor_t* processor, FILE* ostream) {
+bool run(processor_t* processor, FILE* ostream) {
     assert(processor != nullptr);
     assert(processor->code != nullptr);
 
     processor->ip = 0;
     bool run_flag = 1;
 
-    while (run_flag) {
+    while (run_flag == 1) {
         double elm1 = 0, elm2 = 0, result = 0;
         size_t address = 0;
         switch (processor->code[processor->ip]) {
@@ -150,10 +144,15 @@ void run(processor_t* processor, FILE* ostream) {
             }
 #include "cmd_def.h"
 #undef DEF_COMMAND_
-            default:
+            default: {
+                run_flag = -1;
+                LOG(ERROR, "Unknown command %2x, ip = %zu\n", processor->code[processor->ip], processor->ip);
                 break;
+            }
         }
     }
+
+    return (run_flag == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 //====================================================================================================
@@ -169,8 +168,25 @@ static void print_addr(void* elm, FILE* ostream) {
 }
 
 //===================================================================================================
-// TODO: add general mask proccessing: get_arg + validate (debug)
-// TODO: typedef immediate (elemement типо не дабл), imm
+#ifdef DEBUG
+static bool validate_arg(unsigned char arg_type_byte, commands_name_t cmd) {
+    if (arg_type_byte & !(REG_TYPE | NUM_TYPE | RAM_TYPE)) {
+        LOG(ERROR, "Unused bits exposed\n");
+        return EXIT_FAILURE;
+    }
+
+    if ((cmd == CMD_PUSH) && !(arg_type_byte & (REG_TYPE | NUM_TYPE | RAM_TYPE))) {
+        LOG(ERROR, "Push without argument error\n");
+        return EXIT_FAILURE;
+    }
+
+    if ((cmd == CMD_POP) && ((arg_type_byte & (REG_TYPE | NUM_TYPE)) == (REG_TYPE | NUM_TYPE))) {
+        LOG(ERROR, "Pop with reg and addr, but without ram is invalid\n");
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+#endif /* DEBUG */
 
 static double* get_arg(processor_t* processor, size_t* ip) {
     assert(processor != nullptr);

@@ -162,8 +162,6 @@ static void set_poison_value(my_stack_t* stk, char* buffer) {
     }
 }
 
-//FIXME - benchmark lib
-
 //------------------------------------------------------------------------------------------------
 
 my_stack_t* new_stack(size_t elm_size, size_t base_capacity, print_t print

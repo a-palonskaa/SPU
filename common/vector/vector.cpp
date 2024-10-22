@@ -210,7 +210,11 @@ void vector_at_(vector_t* vector, void* dst, size_t dst_width, size_t index) {
 //============================================================================================
 
 void* vector_element_ptr(vector_t* vec, size_t n, size_t elm_size) {
-	assert(vec != nullptr); //LINK - if n > size
+	assert(vec != nullptr);
+
+	if (n > vec->size) {
+		return nullptr;
+	}
 
 	return (char*) vec->data + (elm_size * n);
 }

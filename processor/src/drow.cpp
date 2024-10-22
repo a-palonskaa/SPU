@@ -65,17 +65,23 @@ bool drow(double* ram) {
     }
 
     SDL_Color* colors = (SDL_Color*) calloc(X_SIZE * Y_SIZE, sizeof(SDL_Color));
+    if (colors == nullptr) {
+        LOG(ERROR, "Memory allocation error\n");
+        return EXIT_FAILURE;
+    }
+
     fill_colors(colors, ram);
 
     SDL_Event e = {};
-    int quit_flag = 0;
-    time_t start_time = time(NULL);
-    time_t end_time = start_time + 5;
+    int quit_flag = false;
 
-    while (!quit_flag && (time(NULL) < end_time)) {
+    uint32_t delay_ms = 60;
+    uint32_t end_time = SDL_GetTicks() + delay_ms;
+
+    while (!quit_flag) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
-                quit_flag = 1;
+                quit_flag = true;
             }
         }
 
@@ -85,8 +91,8 @@ bool drow(double* ram) {
         for (size_t i = 0; i < Y_SIZE; i++) {
             for (size_t j = 0; j < X_SIZE; j++) {
                 SDL_Rect square = {};
-                square.x = (int) (150 + j * 4);
-                square.y = (int) (150 + i * 4);
+                square.x = (int)(150 + j * 4);
+                square.y = (int)(150 + i * 4);
                 square.w = 4;
                 square.h = 4;
 
@@ -97,6 +103,10 @@ bool drow(double* ram) {
         }
 
         SDL_RenderPresent(renderer);
+
+        if (SDL_GetTicks() >= end_time) {
+            break;
+        }
     }
 
     free(colors);
@@ -106,6 +116,7 @@ bool drow(double* ram) {
 
     return EXIT_SUCCESS;
 }
+
 
 //====================================================================================================
 
@@ -118,19 +129,14 @@ static void fill_colors(SDL_Color* colors, double* ram) {
     }
 }
 
-//first byte - alpfa, second - red, third- gree, 4th- blue (от 0 до 255)
 static SDL_Color get_color_from_double(double color_bytes) {
-    uint32_t color = (uint32_t) color_bytes;
+    uint32_t color = (uint32_t)color_bytes;
 
     SDL_Color c = {};
-    c.a = (color >> 24) & 0xFF;
+    c.a = 255;
     c.r = (color >> 16) & 0xFF;
     c.g = (color >> 8) & 0xFF;
     c.b = color & 0xFF;
-
     return c;
 }
-
 //====================================================================================================
-
-// TODO: Bad Apple

@@ -46,7 +46,10 @@ int main(int argc, const char* argv[]) {
     processor_ctor(&processor, code_size);
     get_code(istream, &processor, code_size);
 
-    run(&processor, ostream);
+    if (run(&processor, ostream) == EXIT_FAILURE) {
+        LOG(ERROR, "Failed to execute code, error emerged\n");
+    }
+
     processor_dtor(&processor);
 
     if (fclose(istream) == EOF) {

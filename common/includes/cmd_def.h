@@ -1,9 +1,21 @@
 DEF_COMMAND_(PUSH, "push", true, ORN, 0xAA, {
     processor->ip++;
+#ifdef DEBUG
+    if (validate_arg(processor->code[processor->ip], CMD_PUSH) == EXIT_FAILURE) {
+        run_flag = - 1;
+        break;
+    }
+#endif /* DEBUG */
     stack_push(processor->stk, get_arg(processor, &processor->ip));
 })
 DEF_COMMAND_(POP, "pop", true, ORN, 0xAA, {
     processor->ip++;
+#ifdef DEBUG
+    if (validate_arg(processor->code[processor->ip], CMD_POP) == EXIT_FAILURE) {
+        run_flag = - 1;
+        break;
+    }
+#endif /* DEBUG */
     stack_pop(processor->stk, get_arg(processor, &processor->ip));
 })
 DEF_COMMAND_(ADD, "add", false, NAN, 0x2F, {
@@ -72,7 +84,7 @@ DEF_COMMAND_(RET, "ret", false, NAN, 0xAA, {
     stack_pop(processor->addr_stk, &address);
     processor->ip = address;
 })
-DEF_COMMAND_(DROW, "drow", false, NAN, 0xAA, {
+DEF_COMMAND_(SHOW, "show", false, NAN, 0xAA, {
     processor->ip++;
     drow(processor->ram);
 })
