@@ -32,21 +32,21 @@ void disassemble(FILE* istream, FILE* ostream) {
     size_t i = 0;
     while (i < buffer_holder.bytecode_size) {
         switch (buffer_holder.bytecode[i]) {
-#define DEF_COMMAND_(cmd, name, has_arg, arg_type, _)                        \
-    case CMD_##cmd: {                                                        \
-        fprintf(ostream, name " ");                                          \
-        i++;                                                                 \
-        if (has_arg) {                                                       \
-            if (strstr(#arg_type, "ORN") != nullptr) {                       \
-                parse_cmd_args(&buffer_holder.bytecode[i], &i, ostream);     \
-                i++;                                                         \
-            }                                                                \
-            else {                                                           \
-                print_address(ostream, &buffer_holder.bytecode[i]);          \
-                i += sizeof(addr);                                           \
-            }                                                                \
-        }                                                                    \
-        break;                                                               \
+#define DEF_COMMAND_(cmd, name, has_arg, arg_type, __ , _)               \
+    case CMD_##cmd: {                                                    \
+        fprintf(ostream, name " ");                                      \
+        i++;                                                             \
+        if (has_arg) {                                                   \
+            if (strstr(#arg_type, "ORN") != nullptr) {                   \
+                parse_cmd_args(&buffer_holder.bytecode[i], &i, ostream); \
+                i++;                                                     \
+            }                                                            \
+            else {                                                       \
+                print_address(ostream, &buffer_holder.bytecode[i]);      \
+                i += sizeof(addr);                                       \
+            }                                                            \
+        }                                                                \
+        break;                                                           \
     }
 #include "cmd_def.h"
 #undef DEF_COMMAND_

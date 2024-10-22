@@ -319,31 +319,13 @@ static bool process_args(unsigned char* cmd, unsigned char* code, size_t* bytes_
         *bytes_cnt += sizeof(reg);
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wswitch-enum"
     if (arg_type_byte & NUM_TYPE) {
-        switch (cmd_name) {
-            case CMD_PUSH: {
-                char* endptr = nullptr;
-                double number = strtod((char*) cmd, &endptr);
-                cmd = (unsigned char*) endptr;
-                memcpy(&code[*bytes_cnt], &number, sizeof(double));
-                *bytes_cnt += sizeof(imm);
-                break;
-            }
-            case CMD_POP: {
-                char* endptr = nullptr;
-                size_t address = strtoul((char*) cmd, &endptr, 10);
-                cmd = (unsigned char*) endptr;
-                memcpy(&code[*bytes_cnt], &address, sizeof(addr));
-                *bytes_cnt += sizeof(addr);
-                break;
-            }
-            default:
-                break;
-        }
+        char* endptr = nullptr;
+        double number = strtod((char*) cmd, &endptr);
+        cmd = (unsigned char*) endptr;
+        memcpy(&code[*bytes_cnt], &number, sizeof(double));
+        *bytes_cnt += sizeof(imm);
     }
-#pragma GCC diagnostic pop
 
     if (check_for_unused_parameters(cmd) != CORRECT) {
         return EXIT_FAILURE;

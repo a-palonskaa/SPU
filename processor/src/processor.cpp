@@ -29,8 +29,7 @@ const unsigned char RAM_TYPE = 1 << 3;
 static void print_double(void* elm, FILE* ostream);
 static void print_addr(void* elm, FILE* ostream);
 
-static double get_arg_push(processor_t* processor, size_t* ip);
-static double* get_arg_pop(processor_t* processor, size_t* ip);
+static double* get_arg(processor_t* processor, size_t* ip);
 
 //====================================================================================================
 
@@ -114,209 +113,45 @@ void run(processor_t* processor, FILE* ostream) {
     bool run_flag = 1;
 
     while (run_flag) {
+        double elm1 = 0, elm2 = 0, result = 0;
+        size_t address = 0;
         switch (processor->code[processor->ip]) {
-            case CMD_PUSH: {
-                processor->ip++;
-                double value = get_arg_push(processor, &processor->ip);
-                stack_push(processor->stk, &value);
-                break;
+#define DEF_COMMAND_(cmd, name, has_arg, arg_type, cmdcode, func)                               \
+            case CMD_##cmd: {                                                                   \
+                switch (cmdcode) {                                                              \
+                    case 0x2F: {                                                                \
+                        stack_pop(processor->stk, &elm2);                                       \
+                        stack_pop(processor->stk, &elm1);                                       \
+                        func                                                                    \
+                        stack_push(processor->stk, &result);                                    \
+                        processor->ip++;                                                        \
+                        break;                                                                  \
+                    }                                                                           \
+                    case 0x2C: {                                                                \
+                        memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));  \
+                        stack_pop(processor->stk, &elm2);                                       \
+                        stack_pop(processor->stk, &elm1);                                       \
+                        func                                                                    \
+                        break;                                                                  \
+                    }                                                                           \
+                    case 0x1F: {                                                                \
+                        stack_pop(processor->stk, &elm1);                                       \
+                        func                                                                    \
+                        stack_push(processor->stk, &result);                                    \
+                        processor->ip++;                                                        \
+                        break;                                                                  \
+                    }                                                                           \
+                    default: {                                                                  \
+                        func                                                                    \
+                        break;                                                                  \
+                    }                                                                           \
+                }                                                                               \
+                break;                                                                          \
             }
-            case CMD_POP: {
-                processor->ip++;
-                double value = 0;
-                stack_pop(processor->stk, &value);
-                *get_arg_pop(processor, &processor->ip) = value;
+#include "cmd_def.h"
+#undef DEF_COMMAND_
+            default:
                 break;
-            }
-            case CMD_ADD: {
-                double elm1 = 0, elm2 = 0, result = 0;
-
-                stack_pop(processor->stk, &elm2);
-                stack_pop(processor->stk, &elm1);
-                result = elm1 + elm2;
-                stack_push(processor->stk, &result);
-                processor->ip++;
-                break;
-            }
-            case CMD_SUB: {
-                double elm1 = 0, elm2 = 0, result = 0;
-                stack_pop(processor->stk, &elm2);
-                stack_pop(processor->stk, &elm1);
-                result = elm1 - elm2;
-                stack_push(processor->stk, &result);
-                processor->ip++;
-                break;
-            }
-            case CMD_MUL: {
-                double elm1 = 0, elm2 = 0, result = 0;
-                stack_pop(processor->stk, &elm2);
-                stack_pop(processor->stk, &elm1);
-                result = elm1 * elm2;
-                stack_push(processor->stk, &result);
-                processor->ip++;
-                break;
-            }
-            case CMD_DIV: {
-                double elm1 = 0, elm2 = 0, result = 0;
-                stack_pop(processor->stk, &elm2);
-                stack_pop(processor->stk, &elm1);
-                result = elm1 / elm2;
-                stack_push(processor->stk, &result);
-                processor->ip++;
-                break;
-            }
-            case CMD_SQRT: {
-                double elm = 0;
-                stack_pop(processor->stk, &elm);
-                elm = sqrt(elm);
-                stack_push(processor->stk, &elm);
-                processor->ip++;
-                break;
-            }
-            case CMD_SIN: {
-                double elm = 0;
-                stack_pop(processor->stk, &elm);
-                elm = sin(elm);
-                stack_push(processor->stk, &elm);
-                processor->ip++;
-                break;
-            }
-            case CMD_COS: {
-                double elm = 0;
-                stack_pop(processor->stk, &elm);
-                elm = cos(elm);
-                stack_push(processor->stk, &elm);
-                processor->ip++;
-                break;
-            }
-            case CMD_SQR: {
-                double elm1 = 0, elm2 = 0;
-                stack_pop(processor->stk, &elm1);
-                elm2 = elm1 * elm1;
-                stack_push(processor->stk, &elm2);
-                processor->ip++;
-                break;
-            }
-            case CMD_POW: {
-                double elm1 = 0, elm2 = 0, result = 0;
-                stack_pop(processor->stk, &elm2);
-                stack_pop(processor->stk, &elm1);
-                result = pow(elm1, elm2);
-                stack_push(processor->stk, &result);
-                processor->ip++;
-                break;
-            }
-            case CMD_ABS: {
-                double elm = 0, result = 0;
-                stack_pop(processor->stk, &elm);
-                result = fabs(elm);
-                stack_push(processor->stk, &result);
-                processor->ip++;
-                break;
-            }
-            case CMD_LOG: {
-                double elm = 0, result = 0;
-                stack_pop(processor->stk, &elm);
-                result = log(elm);
-                stack_push(processor->stk, &result);
-                processor->ip++;
-                break;
-            }
-            case CMD_JA: {
-                double elm1 = 0, elm2 = 0;
-                size_t address = 0;
-                memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));
-                stack_pop(processor->stk, &elm1);
-                stack_pop(processor->stk, &elm2);
-                processor->ip = (elm2 > elm1) ? address : (processor->ip + 1 + sizeof(size_t));
-                break;
-            }
-            case CMD_JAE: {
-                double elm1 = 0, elm2 = 0;
-                size_t address = 0;
-                memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));
-                stack_pop(processor->stk, &elm1);
-                stack_pop(processor->stk, &elm2);
-                processor->ip = (elm2 >= elm1) ? address : (processor->ip + 1 + sizeof(size_t));
-                break;
-            }
-            case CMD_JB: {
-                double elm1 = 0, elm2 = 0;
-                size_t address = 0;
-                memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));
-                stack_pop(processor->stk, &elm1);
-                stack_pop(processor->stk, &elm2);
-                processor->ip = (elm2 < elm1) ? address : (processor->ip + 1 + sizeof(size_t));
-                break;
-            }
-            case CMD_JBE: {
-                double elm1 = 0, elm2 = 0;
-                size_t address = 0;
-                memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));
-                stack_pop(processor->stk, &elm1);
-                stack_pop(processor->stk, &elm2);
-                processor->ip = (elm2 <= elm1) ? address : (processor->ip + 1 + sizeof(size_t));
-                break;
-            }
-            case CMD_JNE: {
-                double elm1 = 0, elm2 = 0;
-                size_t address = 0;
-                memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));
-                stack_pop(processor->stk, &elm1);
-                stack_pop(processor->stk, &elm2);
-                processor->ip = are_doubles_equal(elm2, elm1) ?
-                                address : (processor->ip + 1 + sizeof(size_t));
-                break;
-            }
-            case CMD_JMP: {
-                size_t address = 0;
-                memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));
-                processor->ip = address;
-                break;
-            }
-            case CMD_CALL: {
-                size_t next_cmd_ip = processor->ip + 1 + sizeof(size_t);
-                stack_push(processor->addr_stk, &next_cmd_ip);
-                size_t address = 0;
-                memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));
-                processor->ip = address;
-                break;
-            }
-            case CMD_RET: {
-                size_t addr = 0;
-                stack_pop(processor->addr_stk, &addr);
-                processor->ip = addr;
-                break;
-            }
-            case CMD_OUT: {
-                double result = 0;
-                stack_pop(processor->stk, &result);
-                fprintf(ostream, "Result is %f\n", result);
-                processor->ip++;
-                break;
-            }
-            case CMD_HLT: {
-                run_flag = 0;
-                processor->ip++;
-                break;
-            }
-            case CMD_DROW: {
-                processor->ip++;
-                drow(processor->ram);
-                break;
-            }
-            case CMD_DUMP: {
-                processor_dump(stdout, processor, _POS);
-                processor->ip++;
-                break;
-            }
-            default: {
-                fprintf(ostream, "SNIXERR: %d\n", processor->code[processor->ip]);
-                LOG(ERROR, "Undefined command ""%d"" ip = %zu\n",
-                           processor->code[processor->ip], processor->ip);
-                return;
-                break;
-            }
         }
     }
 }
@@ -333,154 +168,36 @@ static void print_addr(void* elm, FILE* ostream) {
     fprintf(ostream, "0x%p\n", (void*) *addr);
 }
 
-//====================================================================================================
+//===================================================================================================
+// TODO: add general mask proccessing: get_arg + validate (debug)
+// TODO: typedef immediate (elemement типо не дабл), imm
 
-void parse_code(processor_t* processor, unsigned char* text, size_t file_size) {
-    assert(processor != nullptr);
-    LOG(INFO, "Parsing has been started.\n");
-
-    processor->code = (unsigned char*) calloc(processor->size, sizeof(double));
-    if (processor->code == nullptr) {
-        LOG(ERROR, "Memory allocation error.\n" STRERROR(errno));
-        return;
-    }
-
-    size_t i = 0, j = 0;;
-    unsigned char command = 0;
-    double arg = 0;
-    ssize_t cnt = 0;
-
-    while (i < file_size && j <= processor->size) {
-        cnt = get_int(&text[i], &command);
-        if (cnt == -1) {
-            break;
-        }
-        else {
-            i += (size_t) cnt;
-        }
-
-        processor->code[j++] = command;
-
-
-        if (commands[command - 1].args_amount) {
-            i += get_double(&text[i], &arg);
-            memcpy(processor->code + j, &arg, sizeof(double));
-            j += sizeof(double);
-        }
-    }
-    LOG(INFO, "Successfully parsed the text.\n");
-}
-
-size_t get_double(unsigned char* buffer, double* number) {
-    double val = 0;
-    double power = 0;
-    size_t i = 0;
-    int sign = 0;
-
-    for (; isspace(buffer[i]); i++) {
-        ;
-    }
-
-    sign = (buffer[i] == '-') ? -1 : 1;
-    if (buffer[i] == '+' || buffer[i] == '-') {
-        i++;
-    }
-
-    for (; isdigit(buffer[i]); i++) {
-        val = 10 * val + (buffer[i] - '0');
-    }
-
-    if (buffer[i] =='.') {
-        i++;
-    }
-
-    for (power = 1; isdigit(buffer[i]); i++) {
-        val = 10 * val + (buffer[i] - '0');
-        power *= 10;
-    }
-
-    *number = sign * val / power;
-    return i;
-}
-
-ssize_t get_int(unsigned char* buffer, unsigned char* number) {
-    size_t i = 0;
-    unsigned int val = 0;
-
-    for (; isspace(buffer[i]); i++) {
-        ;
-    }
-
-    for (; isdigit(buffer[i]); i++) {
-        val = 10 * val + (buffer[i] - '0');
-    }
-
-    if (val) {
-        *number = (unsigned char) val;
-        return (ssize_t) i;
-    }
-    return -1;
-}
-
-
-static double get_arg_push(processor_t* processor, size_t* ip) {
+static double* get_arg(processor_t* processor, size_t* ip) {
     assert(processor != nullptr);
     assert(ip != nullptr);
 
     unsigned char arg_type = processor->code[(*ip)++];
     double result = 0;
 
-    if (arg_type & REG_TYPE) {
-        unsigned char reg = 0;
-        memcpy(&reg, &processor->code[*ip], sizeof(char));
-        *ip += sizeof(char);
+    unsigned char reg = 8;
+    if (arg_type & REG_TYPE){
+        memcpy(&reg, &processor->code[*ip], sizeof(reg));
+        *ip += sizeof(reg);
         result += processor->registres[(size_t) reg];
     }
 
     if (arg_type & NUM_TYPE) {
         double number = 0;
-        memcpy(&number, &processor->code[*ip], sizeof(double));
-        *ip += sizeof(double);
+        memcpy(&number, &processor->code[*ip], sizeof(imm));
+        *ip += sizeof(imm);
         result += number;
     }
 
     if (arg_type & RAM_TYPE) {
-        return processor->ram[(size_t) result];
-    }
-    return result;
-}
-
-// TODO: add general mask proccessing: get_arg + validate (debug)
-// TODO: typedef immediate (elemement типо не дабл), imm
-
-
-static double* get_arg_pop(processor_t* processor, size_t* ip) {
-    assert(processor != nullptr);
-    assert(ip != nullptr);
-
-    unsigned char arg_type = processor->code[(*ip)++];
-    double address = 0;
-
-    if (arg_type & RAM_TYPE) {
-        if (arg_type & NUM_TYPE) {
-            double number = 0;
-            memcpy(&number, &processor->code[*ip], sizeof(double));
-            *ip += sizeof(double);
-            address += number;
-        }
-
-        if (arg_type & REG_TYPE){
-            unsigned char reg = 0;
-            memcpy(&reg, &processor->code[*ip], sizeof(char));
-            *ip += sizeof(char);
-            address += processor->registres[(size_t) reg];
-        }
-        return &processor->ram[(size_t) address];
+        return &processor->ram[(size_t) result];
     }
 
-    unsigned char reg = 0;
-    memcpy(&reg, &processor->code[*ip], sizeof(char));
-    *ip += sizeof(char);
+    processor->registres[8] = result;
     return &processor->registres[(size_t) reg];
 }
 
