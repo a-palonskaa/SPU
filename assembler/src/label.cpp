@@ -22,7 +22,6 @@ ssize_t return_label_address(vector_t* name_table, char* name, size_t* i) {
         label_t label = {};
         strncpy(label.name, name, 10);
         label.offset = -1;
-
         vector_push_back_((vector_t*) name_table, &label, sizeof(label_t));
         *i = (vector_size(name_table) / sizeof(label_t)) - 1;
         return -1;
@@ -62,7 +61,8 @@ static ssize_t find_name(vector_t* name_table, char* name) {
     size_t i = 0;
 
     for (; i < vector_size(name_table) / sizeof(label_t); i++) {
-        if (strstr(name, ((label_t*) vector_element_ptr(name_table, i, sizeof(label_t)))->name) != nullptr) {
+        if ((strstr(name, ((label_t*) vector_element_ptr(name_table, i, sizeof(label_t)))->name) != nullptr) &&
+            (strlen(name) == strlen( ((label_t*) vector_element_ptr(name_table, i, sizeof(label_t)))->name))) {
             return (ssize_t) i;
         }
     }

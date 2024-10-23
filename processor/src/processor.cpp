@@ -32,6 +32,7 @@ static void print_addr(void* elm, FILE* ostream);
 static double* get_arg(processor_t* processor, size_t* ip);
 #ifdef DEBUG
 static bool validate_arg(unsigned char arg_type_byte, commands_name_t cmd);
+static bool validate_move_arg(unsigned char arg_type_byte, size_t arg_num);
 #endif /* DEBUG */
 //====================================================================================================
 
@@ -63,7 +64,7 @@ void processor_ctor(processor_t* processor, size_t code_size) {
         processor->registres[i] = REG_POISON_VALUE;
     }
 
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 10000; i++) {
         processor->ram[i] = 0;
     }
 }
@@ -102,44 +103,16 @@ size_t get_code(FILE* istream, processor_t* processor, size_t code_size) {
 bool run(processor_t* processor, FILE* ostream) {
     assert(processor != nullptr);
     assert(processor->code != nullptr);
+    (void) ostream;
 
     processor->ip = 0;
     bool run_flag = 1;
 
     while (run_flag == 1) {
-        double elm1 = 0, elm2 = 0, result = 0;
-        size_t address = 0;
         switch (processor->code[processor->ip]) {
-#define DEF_COMMAND_(cmd, name, has_arg, arg_type, cmdcode, func)                               \
+#define DEF_COMMAND_(cmd, name, has_arg, arg_type, func)                                        \
             case CMD_##cmd: {                                                                   \
-                switch (cmdcode) {                                                              \
-                    case 0x2F: {                                                                \
-                        stack_pop(processor->stk, &elm2);                                       \
-                        stack_pop(processor->stk, &elm1);                                       \
-                        func                                                                    \
-                        stack_push(processor->stk, &result);                                    \
-                        processor->ip++;                                                        \
-                        break;                                                                  \
-                    }                                                                           \
-                    case 0x2C: {                                                                \
-                        memcpy(&address, &processor->code[processor->ip + 1], sizeof(size_t));  \
-                        stack_pop(processor->stk, &elm2);                                       \
-                        stack_pop(processor->stk, &elm1);                                       \
-                        func                                                                    \
-                        break;                                                                  \
-                    }                                                                           \
-                    case 0x1F: {                                                                \
-                        stack_pop(processor->stk, &elm1);                                       \
-                        func                                                                    \
-                        stack_push(processor->stk, &result);                                    \
-                        processor->ip++;                                                        \
-                        break;                                                                  \
-                    }                                                                           \
-                    default: {                                                                  \
-                        func                                                                    \
-                        break;                                                                  \
-                    }                                                                           \
-                }                                                                               \
+                func                                                                            \
                 break;                                                                          \
             }
 #include "cmd_def.h"
@@ -184,6 +157,25 @@ static bool validate_arg(unsigned char arg_type_byte, commands_name_t cmd) {
         LOG(ERROR, "Pop with reg and addr, but without ram is invalid\n");
         return EXIT_FAILURE;
     }
+    return EXIT_SUCCESS;
+}
+
+static bool validate_move_arg(unsigned char arg_type_byte, size_t arg_num) {
+     if (arg_type_byte & !(REG_TYPE | NUM_TYPE | RAM_TYPE)) {
+        LOG(ERROR, "Unused bits exposed\n");
+        return EXIT_FAILURE;
+    }
+
+    if ((arg_num == 1) && (arg_type_byte & NUM_TYPE) && !(arg_type_byte & RAM_TYPE))) {
+        LOG(ERROR, "Cannot make a destination a number\n");
+        return EXIT_FAILURE;
+    }
+
+    if ((arg_num == 2) && (arg_type_byte & RAM_TYPE))) {
+        LOG(ERROR, "Source cannot be a ram\n");
+        return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
 }
 #endif /* DEBUG */

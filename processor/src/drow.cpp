@@ -47,15 +47,6 @@ bool SDL_Ctor(SDL_Window** window, SDL_Renderer** renderer) {
 bool drow(double* ram) {
     assert(ram != nullptr);
 
-#ifdef DEBUG
-    for (size_t i = 0; i < Y_SIZE; i++) {
-        for (size_t j = 0; j < X_SIZE; j++) {
-            printf("%.0f ", *(ram + X_SIZE * i + j));
-        }
-        printf("\n");
-    }
-#endif /* DEBUG */
-
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
@@ -117,7 +108,6 @@ bool drow(double* ram) {
     return EXIT_SUCCESS;
 }
 
-
 //====================================================================================================
 
 static void fill_colors(SDL_Color* colors, double* ram) {
@@ -130,13 +120,38 @@ static void fill_colors(SDL_Color* colors, double* ram) {
 }
 
 static SDL_Color get_color_from_double(double color_bytes) {
-    uint32_t color = (uint32_t)color_bytes;
+    uint32_t color = (uint32_t) color_bytes;
 
     SDL_Color c = {};
     c.a = 255;
-    c.r = (color >> 16) & 0xFF;
-    c.g = (color >> 8) & 0xFF;
-    c.b = color & 0xFF;
+    if (color == 1) {
+        c.r = 255;
+        c.g = 255;
+        c.b = 255;
+        return c;
+    }
+
+    c.r = 0;
+    c.g = 0;
+    c.b = 0;
     return c;
 }
 //====================================================================================================
+
+#ifdef DEBUG
+static void ram_dump(unsigned char* ram) {
+    assert(ram != nullptr);
+
+    for (size_t i = 0; i < Y_SIZE; i++) {
+        for (size_t j = 0; j < X_SIZE; j++) {
+            printf("%.0f ", *(ram + X_SIZE * i + j));
+        }
+        printf("\n");
+    }
+}
+#endif /* DEBUG */
+
+//STUB - past version:
+    // c.r = (color >> 16) & 0xFF;
+    // c.g = (color >> 8) & 0xFF;
+    // c.b = color & 0xFF;

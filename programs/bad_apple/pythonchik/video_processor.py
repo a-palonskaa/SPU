@@ -12,7 +12,10 @@ def calculate_color(bgr):
     blue = max(0, min(bgr[0], 255))
     green = max(0, min(bgr[1], 255))
     red = max(0, min(bgr[2], 255))
-    return (red << 16) | (green << 8) | blue
+
+    if (((red << 16) | (green << 8) | blue) > 250):
+        return 1
+    return 0
 
 def process_video(input_file, output_file):
     video_capture = cv2.VideoCapture(input_file)
@@ -34,23 +37,22 @@ def process_video(input_file, output_file):
         square_width = VIDEO_WIDTH // SCREEN_WIDTH
         square_height = VIDEO_HEIGHT // SCREEN_HEIGHT
 
-        for x in range(SCREEN_WIDTH):
-            for y in range(SCREEN_HEIGHT):
+        for y in range(SCREEN_WIDTH):
+            for x in range(SCREEN_HEIGHT):
                 center_x = x * square_width + square_width // 2
                 center_y = y * square_height + square_height // 2
 
                 if center_x < VIDEO_WIDTH and center_y < VIDEO_HEIGHT:
                     bgr_color = frame[center_y, center_x]
                     color = calculate_color(bgr_color)
+
                     index = y * SCREEN_WIDTH + x
 
                     if current_colors[index] != color:
-                        output.append(f"push {color}")
-                        output.append(f"pop [{index}]")
+                        output.append(f"mov [{index}] {color}")
                         current_colors[index] = color
 
         output.append("show")
-
     output.append("hlt")
 
     with open(output_file, "w") as file:

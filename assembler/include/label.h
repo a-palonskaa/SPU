@@ -1,7 +1,7 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#define NAME_MAX_LEN 10
+#define NAME_MAX_LEN 12
 
 #include <stdio.h>
 #include "vector.h"

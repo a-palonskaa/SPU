@@ -30,6 +30,7 @@ static void parse_arg_with_label(unsigned char* cmd, assembler_t* assm, size_t* 
 static unsigned char get_arg_type(unsigned char* cmd);
 static bool process_args(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt, commands_name_t cmd_name);
 static bool validate_arg_type(unsigned char arg_type_byte, commands_name_t cmd);
+static bool process_two_args(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt);
 
 static void print_header(FILE* ostream);
 
@@ -127,7 +128,8 @@ static bool first_pass_compilation(assembler_t* assm) {
 
         size_t i = 0;
         for (; i < commands_size; i++) {
-            if (strstr((char*) cmd, commands[i].alias) != nullptr) {
+            if (((unsigned char*) strstr((char*) cmd, commands[i].alias) == cmd) &&
+                 ((cmd[strlen(commands[i].alias)] == ' ') ||  (cmd[strlen(commands[i].alias)] == '\0'))) {
                 cmd += strlen(commands[i].alias) + 1;
                 break;
             }
@@ -151,8 +153,8 @@ static bool first_pass_compilation(assembler_t* assm) {
             }
             case (CMD_PUSH - 1): {
                 unsigned char push = (unsigned char) CMD_PUSH;
-                memcpy(&assm->code[bytes_cnt], &push, sizeof(char));
-                bytes_cnt += sizeof(char);
+                memcpy(&assm->code[bytes_cnt], &push, sizeof(command));
+                bytes_cnt += sizeof(command);
 
                 if (process_args(cmd, assm->code, &bytes_cnt, CMD_PUSH) == EXIT_SUCCESS) {
                     continue;
@@ -164,8 +166,8 @@ static bool first_pass_compilation(assembler_t* assm) {
             }
             case (CMD_POP - 1): {
                 unsigned char pop = (unsigned char) CMD_POP;
-                memcpy(&assm->code[bytes_cnt], &pop, sizeof(char));
-                bytes_cnt += sizeof(char);
+                memcpy(&assm->code[bytes_cnt], &pop, sizeof(command));
+                bytes_cnt += sizeof(command);
 
                 if (process_args(cmd, assm->code, &bytes_cnt, CMD_POP) == EXIT_SUCCESS) {
                     continue;
@@ -174,6 +176,34 @@ static bool first_pass_compilation(assembler_t* assm) {
                 printf_diagnostic(assm->text.strings[line_cnt - 1].begin, line_cnt, comment_ptr,
                                   cmd, _POS, "incorrect arguments for pop");
                 return EXIT_FAILURE;
+            }
+            case (CMD_MOV - 1): {
+                unsigned char mov = (unsigned char) CMD_MOV;
+                memcpy(&assm->code[bytes_cnt], &mov, sizeof(command));
+                bytes_cnt += sizeof(command);
+
+                if (process_two_args(cmd, assm->code, &bytes_cnt) == EXIT_SUCCESS) {
+                    continue;
+                }
+
+                printf_diagnostic(assm->text.strings[line_cnt - 1].begin, line_cnt, comment_ptr,
+                                  cmd, _POS, "incorrect arguments for pop");
+                return EXIT_FAILURE;
+            }
+            case (CMD_MEMSET - 1): {
+                unsigned char memset = (unsigned char) CMD_MEMSET;
+                memcpy(&assm->code[bytes_cnt], &memset, sizeof(command));
+                bytes_cnt += sizeof(command);
+
+                parse_number(cmd, assm->code, &bytes_cnt);
+                cmd = (unsigned char*) strstr((char*) cmd, " ");   //FIXME - errors check
+                double number = strtod((char*) cmd, nullptr);      //FIXME - us endptr
+
+                memcpy(&assm->code[bytes_cnt], &number, sizeof(double));
+                bytes_cnt += sizeof(imm);
+                cmd = (unsigned char*) strstr((char*) ++cmd, " ");
+                parse_number(cmd, assm->code, &bytes_cnt);
+                continue;
             }
             default:
                 break;
@@ -263,7 +293,7 @@ static unsigned char get_arg_type(unsigned char* cmd) {
         arg_type_byte |= REG_TYPE;
     }
     else {
-        arg_type_byte |= NUM_TYPE;
+        arg_type_byte |= NUM_TYPE; //ХУЙНЯ - check if num, for pop
     }
 
     return arg_type_byte;
@@ -297,6 +327,23 @@ static void parse_number(unsigned char* cmd, unsigned char* code, size_t* bytes_
 }
 
 //==================================================================================================
+
+static bool process_two_args(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt) {
+    assert(cmd != nullptr);
+    assert(code != nullptr);
+    assert(bytes_cnt != nullptr);
+
+    unsigned char* endptr = (unsigned char*) strstr((char*)cmd, " ");
+    *endptr = '\0';
+
+    if (process_args(cmd, code, bytes_cnt, CMD_MOV) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+    if (process_args(++endptr, code, bytes_cnt, CMD_MOV) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
 
 static bool process_args(unsigned char* cmd, unsigned char* code, size_t* bytes_cnt, commands_name_t cmd_name) {
     assert(cmd != nullptr);

@@ -11,13 +11,19 @@
 #include "commands.h"
 #include "buffer_holder.h"
 
+//==================================================================================================
+
 const unsigned char REG_TYPE = 1 << 1;
 const unsigned char NUM_TYPE = 1 << 2;
 const unsigned char RAM_TYPE = 1 << 3;
 
+//==================================================================================================
+
 static void print_address(FILE* ostream, unsigned char* code);
 static void print_number(FILE* ostream, unsigned char* code);
 static void print_register(FILE* ostream, unsigned char* code);
+
+//==================================================================================================
 
 void disassemble(FILE* istream, FILE* ostream) {
     assert(istream != nullptr);
@@ -32,7 +38,7 @@ void disassemble(FILE* istream, FILE* ostream) {
     size_t i = 0;
     while (i < buffer_holder.bytecode_size) {
         switch (buffer_holder.bytecode[i]) {
-#define DEF_COMMAND_(cmd, name, has_arg, arg_type, __ , _)               \
+#define DEF_COMMAND_(cmd, name, has_arg, arg_type, _)                    \
     case CMD_##cmd: {                                                    \
         fprintf(ostream, name " ");                                      \
         i++;                                                             \
